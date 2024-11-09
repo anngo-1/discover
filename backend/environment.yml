@@ -1,0 +1,13 @@
+name: discover-api
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - flask
+  - requests
+  - pip
+  - flask-cors
+  - pip:
+      - gunicorn
+      - pyalex
