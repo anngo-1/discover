@@ -1,8 +1,6 @@
-import { Container, Title, Text, Space, MantineProvider } from '@mantine/core';
+import { Container, Text, Space} from '@mantine/core';
 import { Navbar } from '@/components/NavBar';
 import { FilterWrapper } from '@/components/FilterWrapper';
-import { DatePicker } from '@mantine/dates';
-import { FilterState } from '@/libs/types';
 import { initialFilters } from '@/app/works/presets/works';
 export default function HomePage() {
   return (

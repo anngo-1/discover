@@ -1,4 +1,3 @@
-import { Container, Title, Text, Space } from '@mantine/core';
 import { Navbar } from '@/components/NavBar';
 
 
