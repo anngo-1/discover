@@ -1,0 +1,6 @@
+flask
+requests
+flask-cors
+gunicorn
+asyncio
+aiohttp
