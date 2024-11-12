@@ -8,7 +8,6 @@ import {
   Text,
   Button,
   Group,
-  Box,
   rem,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';

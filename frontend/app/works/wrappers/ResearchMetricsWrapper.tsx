@@ -28,7 +28,12 @@ interface StackedDataPoint {
   preprints: number;
   datasets: number;
 }
-
+interface TimelineEntry {
+  period: string;
+  total?: string | number;
+  cited_by_count?: string | number;
+  types?: { name: string; count: string | number }[];
+}
 const ResearchMetricsWrapper: FC<ResearchMetricsWrapperProps> = ({ filters }) => {
   const [quickMetrics, setQuickMetrics] = useState<QuickMetrics>({
     totalPapers: 0,
@@ -100,26 +105,25 @@ const ResearchMetricsWrapper: FC<ResearchMetricsWrapperProps> = ({ filters }) =>
 
         const data = await response.json();
 
-        const timeSeriesData = data.timeline.map((entry: any) => ({
+        const timeSeriesData = data.timeline.map((entry:TimelineEntry) => ({
           year: Number(entry.period),
           total_results: Number(entry.total || 0),
           total_citations: Number(entry.cited_by_count || 0)
         }));
 
-        const stackedData = data.timeline.map((entry: any) => {
+        const stackedData = data.timeline.map((entry: TimelineEntry) => {
           const typeMap: Record<string, number> = {};
-          entry.types?.forEach((type: any) => {
+          entry.types?.forEach((type) => {
             typeMap[type.name.toLowerCase()] = Number(type.count) || 0;
           });
-
+        
           return {
             year: Number(entry.period),
             articles: typeMap.article || 0,
             preprints: typeMap.preprint || 0,
-            datasets: typeMap.dataset || 0
+            datasets: typeMap.dataset || 0,
           };
         });
-
         setVisualizationData({
           timeSeriesData,
           stackedData

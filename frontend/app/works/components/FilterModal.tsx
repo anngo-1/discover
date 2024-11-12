@@ -9,14 +9,13 @@ import {
     NumberInput,
     Stack,
     Text,
-    Menu,
     ActionIcon,
     Tooltip,
     Select,
 } from '@mantine/core';
 import { FilterState } from '@/libs/types';
 import { DatePickerInput, DateValue } from '@mantine/dates';
-import { Upload, Download, Settings, X } from 'lucide-react';
+import { Upload, Download, X } from 'lucide-react';
 
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa'
 type FilterModalProps = {
