@@ -28,12 +28,12 @@ Navigate to `http://localhost:3000` to access the application.
 
 ### Manual Setup
 #### Backend Setup
-1. Navigate to the API directory:
-   ```bash
-   cd api
+1. Navigate to the backend directory:
+   ```
+   cd backend
    ```
 2. Set up your Python environment:
-   ```bash
+   ```
    # Using pip
    pip install -r requirements.txt
    # OR using conda
@@ -45,9 +45,9 @@ Navigate to `http://localhost:3000` to access the application.
    python app.py
    ```
 #### Frontend Setup
-1. Navigate to the client directory:
+1. Navigate to the frontend directory:
    ```
-   cd client
+   cd frontend
    ```
 2. Install dependencies:
    ```
