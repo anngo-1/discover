@@ -1,81 +1,137 @@
-'use client';
+'use client'
+import { FC, useState, useCallback } from 'react';
+import { Button, MantineProvider, Text } from '@mantine/core';
+import { Carousel } from '@mantine/carousel';
+import { IconFilter, IconLoader2 } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+import FilterModal from '../app/works/components/FilterModal';
+import { FilterState } from '../libs/types';
+import ResearchMetricsWrapper from '../app/works/wrappers/ResearchMetricsWrapper';
+import { Notifications } from '@mantine/notifications';
+import { worksPredefinedFilters } from '@/app/works/presets/works';
 
-import { FC, useState } from 'react';
-import { Group, Button, Badge, ActionIcon, Modal, TextInput } from '@mantine/core';
-import { IconFilter, IconX } from '@tabler/icons-react';
-import PaginationWrapper from './PaginationWrapper';
-import ResearchMetricsWrapper from './ResearchMetricsWrapper';
+import { useEffect } from 'react';
+import PaginationWrapper from '../app/works/wrappers/PaginationWrapper';
+interface FilterWrapperProps {
+  initialFilters: FilterState;
+}
 
-export function FilterWrapper() {
-  const [filters, setFilters] = useState<string>(''); 
-  const [currentFilter, setCurrentFilter] = useState<string>('Filter 1'); 
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); 
-  const [customFilterValue, setCustomFilterValue] = useState<string>(''); 
+export const FilterWrapper: React.FC<FilterWrapperProps> = ({ initialFilters }) => {
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(initialFilters);
+  const [modalFilters, setModalFilters] = useState<FilterState>(initialFilters);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>("Filter");
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFilterChange = (selectedFilter: string) => {
-    setCurrentFilter(selectedFilter); // update the current filter when a filter is selected
+  const handleApplyFilters = async (newFilters: FilterState) => {
+    setIsLoading(true);
+    try {
+      setAppliedFilters(newFilters);  // This will trigger a state update
+      setActiveFilter("Filter");
+      setIsModalOpen(false);
+      notifications.show({
+        title: 'Filters Applied',
+        message: 'Your search filters have been updated successfully.',
+        color: 'teal',
+        autoClose: 2000,
+        withBorder: true,
+        style: { backgroundColor: 'white' },
+      });
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred',
+        color: 'red',
+        autoClose: 3000,
+        withBorder: true,
+        style: { backgroundColor: 'white' },
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleApplyFilter = () => {
-    setFilters(customFilterValue); // set custom filter value when applying it
-    setCurrentFilter(customFilterValue); // set current filter to custom filter value
-    setIsModalOpen(false); // close the modal after applying
+  useEffect(() => {}, [appliedFilters]);
+
+  const handlePredefinedFilterClick = (predefinedFilter: { name: string; filters: FilterState }) => {
+    setModalFilters(predefinedFilter.filters);
+    setIsModalOpen(true);
   };
 
-  const handleResetFilter = () => {
-    setFilters(''); // reset the filter
-    setCurrentFilter('Filter 1'); // reset to default filter
+  const handleCustomFilterClick = () => {
+    setModalFilters(appliedFilters);
+    setIsModalOpen(true);
   };
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true); // open the modal when "Custom Filter" is selected
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setModalFilters(appliedFilters);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false); // close the modal without applying the custom filter
+  const handleSlideChange = (index: number) => {
+    setCurrentSlide(index);
   };
 
   return (
-    <div className="space-y-4">
-      {/* Filter section */}
-      <Group gap="xs" mb={8} style={{ overflowX: 'auto', paddingBottom: '8px' }}>
-        {/* Filter Buttons */}
-        {['Filter 1', 'Filter 2', 'Filter 3', 'Filter 4', 'Custom Filter'].map((filter) => (
-          <Button
-            key={filter}
-            variant={currentFilter === filter || (filter === 'Custom Filter' && currentFilter === customFilterValue) ? 'filled' : 'outline'} // Filled if selected
-            radius="xl" // Makes the button rounded
-            onClick={() => filter === 'Custom Filter' ? handleOpenModal() : handleFilterChange(filter)}
-          >
-            {filter}
-          </Button>
-        ))}
-      </Group>
+    <div>
+      <Notifications />
+      <Text size="md" fw={700} style={{ marginBottom: '10px' }}>
+        Filters
+      </Text>
 
-      {/* Render Pagination and Metrics with the current filter */}
-      <ResearchMetricsWrapper filters={filters} />
-      <PaginationWrapper filters={filters} />
+      <div className="filters-carousel-container" style={{ padding: '0 1px' }}>
+        <Carousel
+          align="start"
+          slideSize="auto"
+          slidesToScroll={1}
+          onSlideChange={handleSlideChange}
+          dragFree
+          styles={{
+            root: { width: '100%' },
+            viewport: { padding: '4px 0' },
+            control: { display: 'none' },
+          }}
+          style={{ marginBottom: '10px' }}
+        >
+          <Carousel.Slide>
+            <Button
+              variant={activeFilter === "Filter" ? 'filled' : 'outline'}
+              leftSection={<IconFilter size="1rem" />}
+              onClick={handleCustomFilterClick}
+              style={{ marginLeft: '10px', height: '36px' }}
+            >
+              Filter
+            </Button>
+          </Carousel.Slide>
 
-      {/* Modal for custom filter */}
-      <Modal
+          {worksPredefinedFilters.map((filter, index) => (
+            <Carousel.Slide key={index}>
+              <Button
+                variant={activeFilter === filter.name ? 'filled' : 'outline'}
+                onClick={() => handlePredefinedFilterClick(filter)}
+                style={{ marginLeft: '10px', height: '36px' }}
+              >
+                {filter.name}
+              </Button>
+            </Carousel.Slide>
+          ))}
+        </Carousel>
+      </div>
+
+      <FilterModal
         opened={isModalOpen}
-        onClose={handleCloseModal}
-        title="Define Custom Filter"
-        size="lg"
-      >
-        <TextInput
-          label="Custom Filter Criteria"
-          placeholder="Enter your custom filter"
-          value={customFilterValue}
-          onChange={(e) => setCustomFilterValue(e.target.value)} // Update custom filter value
-        />
-        <Group justify="flex-end" mt="md">
-          <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
-          <Button onClick={handleApplyFilter}>Apply Custom Filter</Button>
-        </Group>
-      </Modal>
+        onClose={handleModalClose}
+        onApply={handleApplyFilters}
+        initialFilters={modalFilters}
+        isLoading={isLoading}
+      />
+
+      <ResearchMetricsWrapper filters={appliedFilters} />
+      <PaginationWrapper filters={appliedFilters} />
     </div>
   );
-}
+};
+
 
 export default FilterWrapper;

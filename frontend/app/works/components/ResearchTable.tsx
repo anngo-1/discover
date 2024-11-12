@@ -20,9 +20,10 @@ interface ResearchTableProps {
 }
 
 const ResearchTable: React.FC<ResearchTableProps> = ({ publications }) => {
+
   return (
-    <Paper mt={16} shadow="sm" radius="md" withBorder>
-      <ScrollArea style={{ height: 'calc(100vh - 400px)' }}>
+    <Paper mt={8} shadow="sm" radius="md" withBorder>
+      <ScrollArea style={{ height: 'calc(100vh - 300px)' }}>
         <Box p="md">
           {publications.map((publication) => (
             <Box

@@ -1,23 +1,26 @@
-import { Container, Title, Text, Space } from '@mantine/core';
+import { Container, Title, Text, Space, MantineProvider } from '@mantine/core';
 import { Navbar } from '@/components/NavBar';
 import { FilterWrapper } from '@/components/FilterWrapper';
-import { Providers } from '../providers';
-
+import { DatePicker } from '@mantine/dates';
+import { FilterState } from '@/libs/types';
+import { initialFilters } from '@/app/works/presets/works';
 export default function HomePage() {
   return (
-    <Providers>
+    <div>
       <Navbar />
       <Container
         fluid
         px={24}  // Optional: removes padding from the sides
       >
-        <Space h = "md"/>
+        <Space h="md" />
         <Text c="dimmed">
-          Works are scholarly documents like journal articles, books, datasets, and theses.
+          Works include journal articles, books, datasets, and theses. 
         </Text>
-        <Space h = "md"/>
-        <FilterWrapper/>
+        <Space h="md" />
+        <FilterWrapper
+         initialFilters={initialFilters}  />
       </Container>
-    </Providers>
+    </div>
+
   );
 }

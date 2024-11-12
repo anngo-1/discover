@@ -62,7 +62,7 @@ export function Navbar() {
             truncate
             visibleFrom="sm"
           >
-            Discover: Research Insights at UC San Diego
+            Discover 
           </Text>
 
           {/* Desktop Navigation */}

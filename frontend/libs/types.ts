@@ -13,12 +13,6 @@ export interface Research {
   keywords?: string[];
 }
 
-export interface FilterState {
-  dateRange?: [Date | null, Date | null];
-  types?: ResearchType[];
-  searchTerm?: string;
-  department?: string;
-}
 
 export interface ResearchMetric {
   totalPapers: number;
@@ -61,4 +55,55 @@ export interface FundingSource {
   endDate: string;
   department: string;
   status: 'active' | 'completed' | 'pending';
+}
+
+export type FilterState = {
+  dateRange: {
+    from: Date | null;
+    to: Date | null;
+  };
+  search_query: string;
+  type: string[];
+  fields: string[];
+  excludeFields: string[];
+  citationCount: {
+    min: number;
+    max: number | null;
+  };
+  openAccess: boolean;
+  has_doi: boolean;
+  sort: string[];
+  subject: string;
+};
+
+export interface MetricsData {
+  totalPapers: number;
+  totalCitations: number;
+  averageCitations: number;
+  timeSeriesData: Array<{
+    year: any;
+    period: string;
+    total_results: number;
+    total_citations: number;
+  }>;
+  stackedData: Array<{
+    year: any;
+    period: string;
+    articles: number;
+    preprints: number;
+    datasets: number;
+    other: number;
+  }>;
+  publishers: Array<{
+    name: string;
+    count: number;
+  }>;
+  funders: Array<{
+    name: string;
+    count: number;
+  }>;
+  openAccess: Array<{
+    name: string;
+    count: number;
+  }>;
 }
