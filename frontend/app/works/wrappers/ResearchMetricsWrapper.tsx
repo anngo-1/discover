@@ -58,13 +58,13 @@ const ResearchMetricsWrapper: FC<ResearchMetricsWrapperProps> = ({ filters }) =>
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const host = process.env.NEXT_PUBLIC_HOST
 
-  // Fetch quick metrics data
   useEffect(() => {
     const fetchQuickMetrics = async () => {
       setIsLoadingQuickMetrics(true);
       try {
-        const response = await fetch(`http://localhost:5000/works/publications?filter=${encodeURIComponent(JSON.stringify(filters))}&page=1`);
+        const response = await fetch(`${host}/works/publications?filter=${encodeURIComponent(JSON.stringify(filters))}&page=1`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch publications data');
@@ -92,7 +92,7 @@ const ResearchMetricsWrapper: FC<ResearchMetricsWrapperProps> = ({ filters }) =>
     const fetchVisualizationData = async () => {
       setIsLoadingVisualizations(true);
       try {
-        const response = await fetch(`http://localhost:5000/works/works_metrics?filter=${encodeURIComponent(JSON.stringify(filters))}`);
+        const response = await fetch(`${host}/works/works_metrics?filter=${encodeURIComponent(JSON.stringify(filters))}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch visualization data');
@@ -139,7 +139,7 @@ const ResearchMetricsWrapper: FC<ResearchMetricsWrapperProps> = ({ filters }) =>
     const fetchGroupings = async () => {
       setIsLoadingGroupings(true);
       try {
-        const response = await fetch(`http://localhost:5000/works/group_metrics?filter=${encodeURIComponent(JSON.stringify(filters))}`);
+        const response = await fetch(`${host}/works/group_metrics?filter=${encodeURIComponent(JSON.stringify(filters))}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch groupings data');

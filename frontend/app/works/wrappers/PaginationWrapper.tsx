@@ -30,11 +30,11 @@ const PaginationWrapper: FC<PaginationWrapperProps> = ({ filters }) => {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-
+  const host = process.env.NEXT_PUBLIC_HOST
   const fetchPublications = async (page: number) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/works/publications?page=${page}&filter=${JSON.stringify(filters)}`);
+      const response = await fetch(`${host}/works/publications?page=${page}&filter=${JSON.stringify(filters)}`);
 
       if (!response.ok) {
         throw new Error(`Error fetching publications: ${response.statusText}`);
