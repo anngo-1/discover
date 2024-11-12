@@ -1,3 +1,4 @@
+'use client'
 import { FC, useState, useEffect, useRef } from 'react';
 import { Paper, Title, Text, Group, Loader, Center, Stack, Flex } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
