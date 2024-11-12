@@ -1,5 +1,5 @@
 import { FC, useState, useEffect, useRef } from 'react';
-import { Paper, Title, Text, Group, Loader, Center, Stack, Grid, Flex } from '@mantine/core';
+import { Paper, Title, Text, Group, Loader, Center, Stack, Flex } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { FilterState } from '@/libs/types';
 import { TimeSeriesChart } from '../charts/DoubleBarChart';

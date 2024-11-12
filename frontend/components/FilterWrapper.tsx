@@ -1,6 +1,6 @@
 'use client'
-import { FC, useState, useCallback } from 'react';
-import { Button, MantineProvider, Text } from '@mantine/core';
+import { useState } from 'react';
+import { Button, Text } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import { IconFilter, IconLoader2 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
