@@ -38,7 +38,7 @@ Navigate to `http://localhost:3000` to access the application.
    pip install -r requirements.txt
    # OR using conda
    conda env create --file=environment.yml
-   conda activate researchlens
+   conda activate discover-api
    ```
 3. Start the API server:
    ```
