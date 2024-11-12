@@ -10,4 +10,5 @@ dependencies:
   - flask-cors
   - pip:
       - gunicorn
-      - pyalex
+      - asyncio
+      - aiohttp
