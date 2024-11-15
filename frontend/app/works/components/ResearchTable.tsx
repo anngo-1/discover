@@ -7,7 +7,6 @@ import {
   Group, 
   Stack,
   Badge,
-  Divider,
   Anchor,
 } from '@mantine/core';
 

@@ -1,8 +1,6 @@
 'use client'
 
 import { FC, useState } from 'react';
-import { worksPredefinedFilters } from '@/app/works/presets/works';
-import Filter from '../../../components/Filter';
 import { WorksFilterState } from '@/libs/types';
 interface FilterWrapperProps {
   initialFilters: WorksFilterState;
