@@ -1,14 +1,24 @@
 import React from 'react';
-import { Paper, Text, ScrollArea, Box, Group } from '@mantine/core';
+import { 
+  Paper, 
+  Text, 
+  ScrollArea, 
+  Box, 
+  Group, 
+  Stack,
+  Badge,
+  Divider,
+  Anchor,
+} from '@mantine/core';
 
 interface Author {
   name: string;
 }
 
 interface Publication {
-  id: string;  // Link (OpenAlex link, clickable now)
+  id: string;
   title: string;
-  authors: Author[];  // authors can be null
+  authors: Author[] | null;
   publication_date: string;
   journal: string;
   cited_by_count: number;
@@ -20,68 +30,103 @@ interface ResearchTableProps {
 }
 
 const ResearchTable: React.FC<ResearchTableProps> = ({ publications }) => {
+  return (
+    <Paper shadow="sm" radius="md" withBorder>
+      <ScrollArea h="calc(100vh - 300px)" scrollbarSize={8} offsetScrollbars>
+        <Stack gap="xs" p="md">
+          {publications.map((publication) => (
+            <PublicationCard key={publication.id} publication={publication} />
+          ))}
+        </Stack>
+      </ScrollArea>
+    </Paper>
+  );
+};
+
+const PublicationCard: React.FC<{ publication: Publication }> = ({ publication }) => {
+  const { id, title, authors, publication_date, journal, cited_by_count, doi } = publication;
+
+  const formattedDate = new Date(publication_date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+  });
 
   return (
-    <Paper mt={8} shadow="sm" radius="md" withBorder>
-      <ScrollArea style={{ height: 'calc(100vh - 300px)' }}>
-        <Box p="md">
-          {publications.map((publication) => (
-            <Box
-              key={publication.id}
-              mb="md"
-              p="md"
-              style={{
-                cursor: 'pointer',
-                transition: 'background-color 300ms ease, transform 300ms ease', // Smoother transition for both properties
-                borderRadius: '8px',
-                backgroundColor: '#f9fafb', // Light background for the publication
-                border: '1px solid #e0e0e0', // Subtle border
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Light shadow
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f1f3f5'; // Change background on hover
-                e.currentTarget.style.transform = 'scale(1.01)'; // Slight scale-up effect
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f9fafb'; // Reset background
-                e.currentTarget.style.transform = 'scale(1)'; // Reset scale
-              }}
-            >
-              {/* Title is now underlined and clickable, leading to OpenAlex */}
-              <Text size="xl" fw={600} color="dark">
-                <a
-                  href={publication.id}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: 'inherit',
-                    textDecoration: 'underline', // Underlined title
-                  }}
-                >
-                  {publication.title}
-                </a>
-              </Text>
-              <Text size="sm" color="dimmed" mb="sm">
-                {(publication.authors && Array.isArray(publication.authors) && publication.authors.length > 0)
-                  ? publication.authors.map((author, index) => (
-                      <span key={index}>
-                        {author.name}
-                        {index < publication.authors.length - 1 && ', '}
-                      </span>
-                    ))
-                  : 'No authors available'}
-              </Text>
-              <Text size="xs" color="dimmed" mb="sm">
-                {publication.publication_date} | {publication.journal}
-              </Text>
-              <Group gap="xs">
-                <Text size="xs" color="dimmed">Cited by: {publication.cited_by_count}</Text>
-                <Text size="xs" color="dimmed">| DOI: <a href={`https://doi.org/${publication.doi}`} target="_blank" rel="noopener noreferrer">{publication.doi}</a></Text>
-              </Group>
-            </Box>
-          ))}
+    <Paper 
+      p="md"
+      radius="md"
+      withBorder
+      bg="gray.0"
+      style={{
+        transition: 'all 150ms ease',
+      }}
+      styles={(theme) => ({
+        root: {
+          '&:hover': {
+            backgroundColor: theme.white,
+            transform: 'translateY(-2px)',
+            boxShadow: theme.shadows.sm,
+          }
+        }
+      })}
+    >
+      <Stack gap="sm">
+        <Box>
+          <Anchor
+            href={id}
+            target="_blank"
+            rel="noopener noreferrer"
+            underline="never"
+            display="block"
+          >
+            <Text size="lg" fw={600} mb={4} style={{ lineHeight: 1.3 }}>
+              {title}
+            </Text>
+          </Anchor>
+
+          {authors && authors.length > 0 && (
+            <Text size="sm" c="dimmed" mb={4} lineClamp={2}>
+              {authors.map((author, index) => (
+                <span key={index}>
+                  {author.name}
+                  {index < authors.length - 1 && ', '}
+                </span>
+              ))}
+            </Text>
+          )}
         </Box>
-      </ScrollArea>
+
+        <Group gap="sm" wrap="wrap">
+          <Badge variant="dot" radius="sm" color="gray">
+            {formattedDate}
+          </Badge>
+          
+          <Badge variant="outline" radius="sm" color="dark">
+            {journal}
+          </Badge>
+
+          <Badge 
+            variant="light" 
+            radius="sm"
+            color="gray"
+          >
+            {cited_by_count} citations
+          </Badge>
+
+          {doi && (
+            <Anchor
+              href={`https://doi.org/${doi}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="sm"
+              c="dimmed"
+              style={{ fontFamily: 'monospace' }}
+            >
+              DOI: {doi}
+            </Anchor>
+          )}
+        </Group>
+      </Stack>
     </Paper>
   );
 };

@@ -1,20 +1,15 @@
-'use client';
-
+// components/PaginationWrapper.tsx
 import { FC, useState, useEffect } from 'react';
 import { Text, ActionIcon, Center, Loader, Pagination } from '@mantine/core';
 import { IconDownload } from '@tabler/icons-react';
 import ResearchTable from '../components/ResearchTable';
-import { FilterState } from '@/libs/types';
+import { WorksFilterState } from '@/libs/types';
 import React from 'react';
-
-interface Author {
-  name: string;
-}
 
 interface Publication {
   id: string;
   title: string;
-  authors: Author[];
+  authors: { name: string }[];
   publication_date: string;
   journal: string;
   cited_by_count: number;
@@ -22,29 +17,27 @@ interface Publication {
 }
 
 interface PaginationWrapperProps {
-  filters: FilterState;
+  filters: WorksFilterState;
 }
 
 const PaginationWrapper: FC<PaginationWrapperProps> = ({ filters }) => {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const host = process.env.NEXT_PUBLIC_HOST
+  const [isLoading, setIsLoading] = useState(false);  
+
+  const host = process.env.NEXT_PUBLIC_HOST;
+
   const fetchPublications = async (page: number) => {
     setIsLoading(true);
     try {
       const response = await fetch(`${host}/works/publications?page=${page}&filter=${JSON.stringify(filters)}`);
-
       if (!response.ok) {
         throw new Error(`Error fetching publications: ${response.statusText}`);
       }
-
       const data = await response.json();
-      const { publications, total_pages } = data;
-
-      setPublications(publications);
-      setTotalPages(total_pages);
+      setPublications(data.publications);
+      setTotalPages(data.total_pages);
     } catch (error) {
       console.error('Error fetching publications:', error);
     } finally {
@@ -53,9 +46,8 @@ const PaginationWrapper: FC<PaginationWrapperProps> = ({ filters }) => {
   };
 
   useEffect(() => {
-    // fetch publications when filters change or currentPage changes
     fetchPublications(currentPage);
-  }, [filters, currentPage]); 
+  }, [filters, currentPage]);
 
   return (
     <div>
@@ -66,7 +58,7 @@ const PaginationWrapper: FC<PaginationWrapperProps> = ({ filters }) => {
           justifyContent: 'space-between',
           marginBottom: '8px',
           marginTop: '16px',
-          flexWrap: 'wrap', // allows items to wrap on small screens
+          flexWrap: 'wrap',
           gap: '8px',
         }}
       >
@@ -85,7 +77,7 @@ const PaginationWrapper: FC<PaginationWrapperProps> = ({ filters }) => {
             root: {
               display: 'flex',
               alignItems: 'center',
-              flex: '1 1 auto', // allows pagination to shrink or grow based on screen size
+              flex: '1 1 auto',
               justifyContent: 'flex-end',
             },
             control: {

@@ -1,4 +1,5 @@
 import { MantineProvider } from '@mantine/core';
+import { Navbar } from '@/components/NavBar';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
@@ -16,6 +17,7 @@ export default function RootLayout({
       </head>
       <body>
       <MantineProvider>
+        <Navbar/>
         {children}
         </MantineProvider>
       </body>

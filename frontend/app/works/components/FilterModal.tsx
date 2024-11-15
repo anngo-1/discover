@@ -12,17 +12,79 @@ import {
     ActionIcon,
     Tooltip,
     Select,
+    Paper,
+    Divider,
+    Box,
 } from '@mantine/core';
-import { FilterState } from '@/libs/types';
-import { DatePickerInput, DateValue } from '@mantine/dates';
+import { WorksFilterState } from '@/libs/types';
+import { DatePickerInput } from '@mantine/dates';
 import { Upload, Download, X } from 'lucide-react';
+import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa'
+// Options arrays moved outside component to prevent recreation on each render
+const sortOptions = [
+    { value: 'display_name', label: 'Name' },
+    { value: 'cited_by_count', label: 'Citation Count' },
+    { value: 'publication_date', label: 'Publication Date' }
+];
+
+const publicationTypes = [
+    { value: 'article', label: 'Article' },
+    { value: 'book-chapter', label: 'Book Chapter' },
+    { value: 'dataset', label: 'Dataset' },
+    { value: 'preprint', label: 'Preprint' },
+    { value: 'dissertation', label: 'Dissertation' },
+    { value: 'book', label: 'Book' },
+    { value: 'review', label: 'Review Article' },
+    { value: 'paratext', label: 'Paratext' },
+    { value: 'libguides', label: 'Library Guides' },
+    { value: 'letter', label: 'Letter' },
+    { value: 'other', label: 'Other' },
+    { value: 'reference-entry', label: 'Reference Entry' },
+    { value: 'report', label: 'Report' },
+    { value: 'editorial', label: 'Editorial' },
+    { value: 'peer-review', label: 'Peer Review' },
+    { value: 'standard', label: 'Standard' },
+    { value: 'erratum', label: 'Erratum' },
+    { value: 'grant', label: 'Grant' },
+    { value: 'supplementary-materials', label: 'Supplementary Materials' },
+    { value: 'retraction', label: 'Retraction' }
+];
+
+const fieldOptions = [
+    'Agricultural and Biological Sciences',
+    'Arts and Humanities',
+    'Biochemistry, Genetics and Molecular Biology',
+    'Business, Management and Accounting',
+    'Chemical Engineering',
+    'Chemistry',
+    'Computer Science',
+    'Decision Sciences',
+    'Earth and Planetary Sciences',
+    'Economics, Econometrics and Finance',
+    'Energy',
+    'Engineering',
+    'Environmental Science',
+    'Immunology and Microbiology',
+    'Materials Science',
+    'Mathematics',
+    'Medicine',
+    'Neuroscience',
+    'Nursing',
+    'Pharmacology, Toxicology and Pharmaceutics',
+    'Physics and Astronomy',
+    'Psychology',
+    'Social Sciences',
+    'Veterinary',
+    'Dentistry',
+    'Health Professions'
+].map(field => ({ value: field, label: field }));
+
 type FilterModalProps = {
     opened: boolean;
     onClose: () => void;
-    onApply: (filters: FilterState) => Promise<void>;
-    initialFilters: FilterState;
+    onApply: (filters: WorksFilterState) => Promise<void>;
+    initialFilters: WorksFilterState;
     isLoading: boolean;
 };
 
@@ -33,72 +95,8 @@ const FilterModal: FC<FilterModalProps> = ({
     initialFilters,
     isLoading,
 }) => {
-    const [filters, setFilters] = useState<FilterState>({ ...initialFilters });
+    const [filters, setFilters] = useState<WorksFilterState>({ ...initialFilters });
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const sortOptions = [
-        { value: 'display_name', label: 'Name' },
-        { value: 'cited_by_count', label: 'Citation Count' },
-        // { value: 'works_count', label: 'Works Count' },
-        { value: 'publication_date', label: 'Publication Date' }
-    ];
-
-    const publicationTypes = [
-        { value: 'article', label: 'Article' },
-        { value: 'book-chapter', label: 'Book Chapter' },
-        { value: 'dataset', label: 'Dataset' },
-        { value: 'preprint', label: 'Preprint' },
-        { value: 'dissertation', label: 'Dissertation' },
-        { value: 'book', label: 'Book' },
-        { value: 'review', label: 'Review Article' },
-        { value: 'paratext', label: 'Paratext' },
-        { value: 'libguides', label: 'Library Guides' },
-        { value: 'letter', label: 'Letter' },
-        { value: 'other', label: 'Other' },
-        { value: 'reference-entry', label: 'Reference Entry' },
-        { value: 'report', label: 'Report' },
-        { value: 'editorial', label: 'Editorial' },
-        { value: 'peer-review', label: 'Peer Review' },
-        { value: 'standard', label: 'Standard' },
-        { value: 'erratum', label: 'Erratum' },
-        { value: 'grant', label: 'Grant' },
-        { value: 'supplementary-materials', label: 'Supplementary Materials' },
-        { value: 'retraction', label: 'Retraction' }
-    ];
-
-    const fieldNames = [
-        'Agricultural and Biological Sciences',
-        'Arts and Humanities',
-        'Biochemistry, Genetics and Molecular Biology',
-        'Business, Management and Accounting',
-        'Chemical Engineering',
-        'Chemistry',
-        'Computer Science',
-        'Decision Sciences',
-        'Earth and Planetary Sciences',
-        'Economics, Econometrics and Finance',
-        'Energy',
-        'Engineering',
-        'Environmental Science',
-        'Immunology and Microbiology',
-        'Materials Science',
-        'Mathematics',
-        'Medicine',
-        'Neuroscience',
-        'Nursing',
-        'Pharmacology, Toxicology and Pharmaceutics',
-        'Physics and Astronomy',
-        'Psychology',
-        'Social Sciences',
-        'Veterinary',
-        'Dentistry',
-        'Health Professions'
-    ];
-
-    const fieldOptions = fieldNames.map((fieldName) => ({
-        value: fieldName,
-        label: fieldName,
-    }));
 
     useEffect(() => {
         if (opened) {
@@ -110,7 +108,7 @@ const FilterModal: FC<FilterModalProps> = ({
         await onApply(filters);
     };
 
-    const handleDateChange = (field: 'from' | 'to') => (value: DateValue) => {
+    const handleDateChange = (field: 'from' | 'to') => (value: Date | null) => {
         setFilters(prev => ({
             ...prev,
             dateRange: { ...prev.dateRange, [field]: value }
@@ -128,7 +126,7 @@ const FilterModal: FC<FilterModalProps> = ({
         }));
     };
 
-    const handleSwitchChange = (field: keyof FilterState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSwitchChange = (field: keyof WorksFilterState) => (event: React.ChangeEvent<HTMLInputElement>) => {
         setFilters(prev => ({ ...prev, [field]: event.target.checked }));
     };
 
@@ -157,7 +155,6 @@ const FilterModal: FC<FilterModalProps> = ({
         reader.onload = (e) => {
             try {
                 const importedFilters = JSON.parse(e.target?.result as string);
-                // Validate imported filters structure
                 const validatedFilters = {
                     ...initialFilters,
                     ...importedFilters,
@@ -201,48 +198,57 @@ const FilterModal: FC<FilterModalProps> = ({
             return { ...prev, sort: newSort };
         });
     };
+
     const SortItem = ({ sort, index }: { sort: string, index: number }) => {
         const isDesc = sort.includes(':desc');
         const baseSort = sort.replace(':desc', '');
         const label = sortOptions.find(opt => opt.value === baseSort)?.label || baseSort;
 
         return (
-            <Group gap="xs" className="bg-gray-100 rounded p-2">
-                <Text size="sm">{label}</Text>
-                <Tooltip label={isDesc ? "Sort Descending" : "Sort Ascending"}>
-                    <ActionIcon size="sm" onClick={() => toggleSortDirection(index)}>
-                        {isDesc ? (
-                            <FaArrowDown size={14} />
-                        ) : (
-                            <FaArrowUp size={14} />
-                        )}
-                    </ActionIcon>
-                </Tooltip>
-                <Tooltip label="Remove">
-                    <ActionIcon size="sm" color="red" onClick={() => handleRemoveSort(index)}>
-                        <X size={14} />
-                    </ActionIcon>
-                </Tooltip>
-            </Group>
+            <Paper p="xs" radius="sm" withBorder>
+                <Group align="apart">
+                    <Text size="sm">{label}</Text>
+                    <Group gap={4}>
+                        <Tooltip label={isDesc ? "Sort Descending" : "Sort Ascending"}>
+                            <ActionIcon size="sm" variant="subtle" onClick={() => toggleSortDirection(index)}>
+                                {isDesc ? <FaArrowDown size={14} /> : <FaArrowUp size={14} />}
+                            </ActionIcon>
+                        </Tooltip>
+                        <Tooltip label="Remove">
+                            <ActionIcon size="sm" color="red" variant="subtle" onClick={() => handleRemoveSort(index)}>
+                                <X size={14} />
+                            </ActionIcon>
+                        </Tooltip>
+                    </Group>
+                </Group>
+            </Paper>
         );
     };
 
     return (
-        <Modal opened={opened} onClose={onClose} title="Works Filter" size="lg">
+        <Modal
+            opened={opened}
+            onClose={onClose}
+            title="Works Filter"
+            size="lg"
+            padding="md"
+        >
             <Stack gap="md">
-                <Group align="center">
-                    <Tooltip label="Import Filter">
-                        <Button variant="light" leftSection={<Upload size={14} />} onClick={handleImportClick}>
-                            Import Filter
-                        </Button>
-                    </Tooltip>
-
-                    <Tooltip label="Export Filter">
-                        <Button variant="light" leftSection={<Download size={14} />} onClick={handleExportFilters}>
-                            Export Filter
-                        </Button>
-                    </Tooltip>
-
+                <Group>
+                    <Button 
+                        variant="light" 
+                        leftSection={<Upload size={14} />} 
+                        onClick={handleImportClick}
+                    >
+                        Import Filter
+                    </Button>
+                    <Button 
+                        variant="light" 
+                        leftSection={<Download size={14} />} 
+                        onClick={handleExportFilters}
+                    >
+                        Export Filter
+                    </Button>
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -252,33 +258,38 @@ const FilterModal: FC<FilterModalProps> = ({
                     />
                 </Group>
 
-                <div>
-                    <Text size="sm" mb={4}>Date Range</Text>
+                <Divider />
+
+                <Box>
+                    <Text size="sm" fw={500} mb={8}>Date Range</Text>
                     <Group grow>
                         <DatePickerInput
                             placeholder="From date"
                             value={filters.dateRange.from}
                             onChange={handleDateChange('from')}
                             clearable
+                            size="sm"
                         />
                         <DatePickerInput
                             placeholder="To date"
                             value={filters.dateRange.to}
                             onChange={handleDateChange('to')}
                             clearable
+                            size="sm"
                         />
                     </Group>
-                </div>
+                </Box>
 
                 <TextInput
                     label="Text Search"
                     placeholder="Search titles and abstracts"
                     value={filters.search_query}
                     onChange={(event) => setFilters(prev => ({ ...prev, search_query: event.target.value }))}
+                    size="sm"
                 />
 
-                <div>
-                    <Text size="sm" fw={500} mb={4}>Sort By</Text>
+                <Box>
+                    <Text size="sm" fw={500} mb={8}>Sort By</Text>
                     <Stack gap="xs">
                         {filters.sort?.map((sort, index) => (
                             <SortItem key={index} sort={sort} index={index} />
@@ -292,9 +303,10 @@ const FilterModal: FC<FilterModalProps> = ({
                             onChange={(value: string | null) => value && handleAddSort(value)}
                             disabled={filters.sort?.length === sortOptions.length}
                             clearable={false}
+                            size="sm"
                         />
                     </Stack>
-                </div>
+                </Box>
 
                 <MultiSelect
                     label="Types of Work to Include"
@@ -304,6 +316,7 @@ const FilterModal: FC<FilterModalProps> = ({
                     placeholder="Select publication types"
                     clearable
                     searchable
+                    size="sm"
                 />
 
                 <MultiSelect
@@ -315,8 +328,7 @@ const FilterModal: FC<FilterModalProps> = ({
                     clearable
                     searchable
                     maxDropdownHeight={200}
-                    limit={20}
-                    withScrollArea={true}
+                    size="sm"
                 />
 
                 <MultiSelect
@@ -328,41 +340,45 @@ const FilterModal: FC<FilterModalProps> = ({
                     clearable
                     searchable
                     maxDropdownHeight={200}
-                    limit={20}
-                    withScrollArea={true}
+                    size="sm"
                 />
 
-                <div>
-                    <Text size="sm" fw={500} mb={4}>Citation Count Range</Text>
+                <Box>
+                    <Text size="sm" fw={500} mb={8}>Citation Count Range</Text>
                     <Group grow>
                         <NumberInput
                             placeholder="Min citations"
                             value={filters.citationCount.min}
                             onChange={handleNumberChange('min')}
                             min={0}
+                            size="sm"
                         />
                         <NumberInput
                             placeholder="Max citations"
                             value={filters.citationCount.max ?? undefined}
                             onChange={handleNumberChange('max')}
                             min={0}
+                            size="sm"
                         />
                     </Group>
-                </div>
+                </Box>
 
-                <Switch
-                    label="Open Access Only"
-                    checked={filters.openAccess ?? false}
-                    onChange={handleSwitchChange('openAccess')}
-                />
+                <Group grow>
+                    <Switch
+                        label="Open Access Only"
+                        checked={filters.openAccess ?? false}
+                        onChange={handleSwitchChange('openAccess')}
+                        size="sm"
+                    />
+                    <Switch
+                        label="DOI Exists"
+                        checked={filters.has_doi ?? false}
+                        onChange={handleSwitchChange('has_doi')}
+                        size="sm"
+                    />
+                </Group>
 
-                <Switch
-                    label="DOI Exists"
-                    checked={filters.has_doi ?? false}
-                    onChange={handleSwitchChange('has_doi')}
-                />
-
-                <Group justify="flex-end" mt="md">
+                <Group align="right" mt="md">
                     <Button variant="subtle" onClick={onClose} disabled={isLoading}>
                         Cancel
                     </Button>

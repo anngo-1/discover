@@ -1,14 +1,12 @@
 import { Container, Text, Space} from '@mantine/core';
-import { Navbar } from '@/components/NavBar';
-import { FilterWrapper } from '@/components/FilterWrapper';
+import FilterWrapper from '@/app/works/wrappers/FilterWrapper';
 import { initialFilters } from '@/app/works/presets/works';
 export default function HomePage() {
   return (
     <div>
-      <Navbar />
       <Container
         fluid
-        px={24}  // Optional: removes padding from the sides
+        px={24} 
       >
         <Space h="md" />
         <Text c="dimmed">
