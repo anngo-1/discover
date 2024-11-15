@@ -21,7 +21,6 @@ import { DatePickerInput } from '@mantine/dates';
 import { Upload, Download, X } from 'lucide-react';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 
-// Options arrays moved outside component to prevent recreation on each render
 const sortOptions = [
     { value: 'display_name', label: 'Name' },
     { value: 'cited_by_count', label: 'Citation Count' },

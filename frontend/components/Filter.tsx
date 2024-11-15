@@ -1,5 +1,3 @@
-'use client';
-
 import { FC, useState } from 'react';
 import { Button, Text } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
@@ -9,7 +7,7 @@ import { notifications } from '@mantine/notifications';
 interface FilterProps<T> {
   initialFilters: T;
   predefinedFilters: { name: string; filters: T }[];
-  onFiltersApplied: (newFilters: T) => void; 
+  onFiltersApplied: (newFilters: T) => void;  
   FilterModalComponent: FC<{
     opened: boolean;
     onClose: () => void;
@@ -31,10 +29,10 @@ const Filter = <T,>({
   const [activeFilter, setActiveFilter] = useState<string>('Filter');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleApplyFilters = async (newFilters: T) => {
+  const handleApplyFilters = (newFilters: T) => {  
     setIsLoading(true);
     try {
-      await onFiltersApplied(newFilters);  // Await the promise returned by onFiltersApplied
+      onFiltersApplied(newFilters);  
       setAppliedFilters(newFilters);
       setActiveFilter('Filter');
       setIsModalOpen(false);
@@ -55,6 +53,7 @@ const Filter = <T,>({
   const handlePredefinedFilterClick = (predefinedFilter: { name: string; filters: T }) => {
     setModalFilters(predefinedFilter.filters);
     setIsModalOpen(true);
+    setActiveFilter(predefinedFilter.name);  
   };
 
   const handleCustomFilterClick = () => {
@@ -112,7 +111,7 @@ const Filter = <T,>({
       <FilterModalComponent
         opened={isModalOpen}
         onClose={handleModalClose}
-        onApply={handleApplyFilters}  // Pass async handleApplyFilters to match Promise<void> signature
+        onApply={handleApplyFilters}
         initialFilters={modalFilters}
         isLoading={isLoading}
       />

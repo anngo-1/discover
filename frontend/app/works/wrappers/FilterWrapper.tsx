@@ -1,5 +1,4 @@
 'use client'
-
 import { FC, useState } from 'react';
 import ResearchMetricsWrapper from './ResearchMetricsWrapper';
 import PaginationWrapper from './PaginationWrapper';
