@@ -1,11 +1,9 @@
 // lib/types.ts
-export type ResearchType = 'paper' | 'dataset' | 'book' | 'thesis';
-
 export interface Research {
   id: string;
   title: string;
   author: string;
-  type: ResearchType;
+  type: string;
   date: string;
   citations: number;
   department?: string;
@@ -14,50 +12,8 @@ export interface Research {
 }
 
 
-export interface ResearchMetric {
-  totalPapers: number;
-  totalDatasets: number;
-  paperGrowth: number;
-  datasetGrowth: number;
-  researchPeak: string;
-}
 
-export interface Researcher {
-  id: string;
-  name: string;
-  department: string;
-  publications: number;
-  citations: number;
-  hIndex: number;
-}
-
-export interface Journal {
-  id: string;
-  name: string;
-  publisher: string;
-  impactFactor: number;
-  publications: number;
-}
-
-export interface Topic {
-  id: string;
-  name: string;
-  count: number;
-  relatedTopics: string[];
-  trending: boolean;
-}
-
-export interface FundingSource {
-  id: string;
-  name: string;
-  amount: number;
-  startDate: string;
-  endDate: string;
-  department: string;
-  status: 'active' | 'completed' | 'pending';
-}
-
-export type FilterState = {
+export type WorksFilterState = {
   dateRange: {
     from: Date | null;
     to: Date | null;
@@ -76,34 +32,35 @@ export type FilterState = {
   subject: string;
 };
 
-export interface MetricsData {
-  totalPapers: number;
-  totalCitations: number;
-  averageCitations: number;
-  timeSeriesData: Array<{
-    year: any;
-    period: string;
-    total_results: number;
-    total_citations: number;
-  }>;
-  stackedData: Array<{
-    year: any;
-    period: string;
-    articles: number;
-    preprints: number;
-    datasets: number;
-    other: number;
-  }>;
-  publishers: Array<{
-    name: string;
-    count: number;
-  }>;
-  funders: Array<{
-    name: string;
-    count: number;
-  }>;
-  openAccess: Array<{
-    name: string;
-    count: number;
-  }>;
+
+export interface QuickMetric {
+  title: string;
+  value: string | number;
+  description: string;
+}
+
+export interface WorksMetricsState {
+  quickMetrics: {
+    totalPapers: number;
+    totalCitations: number;
+    averageCitations: number;
+  };
+  visualizationData: {
+    timeSeriesData: Array<{
+      year: number;
+      total_results: number;
+      total_citations: number;
+    }>;
+    stackedData: Array<{
+      year: number;
+      articles: number;
+      preprints: number;
+      datasets: number;
+    }>;
+  };
+  groupingsData: {
+    funders: Record<string, number>;
+    publishers: Record<string, number>;
+    openAccess: Record<string, number>;
+  };
 }
