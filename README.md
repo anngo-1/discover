@@ -58,3 +58,6 @@ Navigate to `http://localhost:3000` to access the application.
    npm run dev
    ```
 Visit `http://localhost:3000` to access the application.
+
+
+For more details, you can refer to the [technical documentation](https://anngo-1.github.io/discover/)
