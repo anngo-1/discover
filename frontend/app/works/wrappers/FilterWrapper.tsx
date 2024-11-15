@@ -13,22 +13,18 @@ interface FilterWrapperProps {
 }
 
 const FilterWrapper: FC<FilterWrapperProps> = ({ initialFilters }) => {
-  const [filters, setFilters] = useState<WorksFilterState>(initialFilters);
-
-  const handleFiltersApplied = async (newFilters: WorksFilterState) => {
-    setFilters(newFilters);
-  };
+  const [currentFilters, setCurrentFilters] = useState<WorksFilterState>(initialFilters);
 
   return (
     <div>
       <Filter
-        initialFilters={filters}
+        initialFilters={currentFilters}
         predefinedFilters={worksPredefinedFilters}
-        onFiltersApplied={handleFiltersApplied}  //
-        FilterModalComponent={FilterModal}  
+        onFiltersApplied={setCurrentFilters}
+        FilterModalComponent={FilterModal}
       />
-      <ResearchMetricsWrapper filters={filters} />
-      <PaginationWrapper filters={filters} />
+      <ResearchMetricsWrapper filters={currentFilters} />
+      <PaginationWrapper filters={currentFilters} />
     </div>
   );
 };

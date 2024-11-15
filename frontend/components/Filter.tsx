@@ -9,11 +9,11 @@ import { notifications } from '@mantine/notifications';
 interface FilterProps<T> {
   initialFilters: T;
   predefinedFilters: { name: string; filters: T }[];
-  onFiltersApplied: (newFilters: T) => Promise<void>; 
+  onFiltersApplied: (newFilters: T) => void; 
   FilterModalComponent: FC<{
     opened: boolean;
     onClose: () => void;
-    onApply: (filters: T) => Promise<void>;  
+    onApply: (filters: T) => void;  
     initialFilters: T;
     isLoading: boolean;
   }>;

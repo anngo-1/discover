@@ -83,7 +83,7 @@ const fieldOptions = [
 type FilterModalProps = {
     opened: boolean;
     onClose: () => void;
-    onApply: (filters: WorksFilterState) => Promise<void>;
+    onApply: (filters: WorksFilterState) => void;
     initialFilters: WorksFilterState;
     isLoading: boolean;
 };
