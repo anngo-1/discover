@@ -1,8 +1,8 @@
 'use client'
-import { FC, useState, useCallback } from 'react';
-import { Button, MantineProvider, Text } from '@mantine/core';
+import { useState } from 'react';
+import { Button, Text } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
-import { IconFilter, IconLoader2 } from '@tabler/icons-react';
+import { IconFilter} from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import FilterModal from '../app/works/components/FilterModal';
 import { FilterState } from '../libs/types';
@@ -21,7 +21,6 @@ export const FilterWrapper: React.FC<FilterWrapperProps> = ({ initialFilters }) 
   const [modalFilters, setModalFilters] = useState<FilterState>(initialFilters);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>("Filter");
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleApplyFilters = async (newFilters: FilterState) => {
@@ -69,10 +68,7 @@ export const FilterWrapper: React.FC<FilterWrapperProps> = ({ initialFilters }) 
     setModalFilters(appliedFilters);
   };
 
-  const handleSlideChange = (index: number) => {
-    setCurrentSlide(index);
-  };
-
+ 
   return (
     <div>
       <Notifications />
@@ -85,7 +81,6 @@ export const FilterWrapper: React.FC<FilterWrapperProps> = ({ initialFilters }) 
           align="start"
           slideSize="auto"
           slidesToScroll={1}
-          onSlideChange={handleSlideChange}
           dragFree
           styles={{
             root: { width: '100%' },

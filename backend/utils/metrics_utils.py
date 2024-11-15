@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import requests
 from utils import OPENALEX_API_URL
-
+import time
 def transform_group_data(group_data, key):
     return {
         item['name']: item['count']
@@ -20,7 +20,7 @@ def transform_open_access_data(group_data, key):
 def fetch_metrics(base_params, group_by=None):
     try:
         metrics = {}
-
+        time.sleep(1)
         response = requests.get(
             OPENALEX_API_URL,
             params={**base_params, 'select': 'id', 'cited_by_count_sum': 'true'}

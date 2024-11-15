@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Text, ScrollArea, Box, Group, Loader } from '@mantine/core';
+import { Paper, Text, ScrollArea, Box, Group } from '@mantine/core';
 
 interface Author {
   name: string;
