@@ -1,5 +1,14 @@
-// lib/types.ts
-export interface Research {
+# Types Documentation
+`libs/types.ts`
+
+## Overview
+Central type definitions for the application, defining interfaces for research data, filters, and metrics.
+
+## Type Definitions
+
+### Research Interface
+```typescript
+interface Research {
   id: string;
   title: string;
   author: string;
@@ -10,10 +19,11 @@ export interface Research {
   abstract?: string;
   keywords?: string[];
 }
+```
 
-
-
-export type WorksFilterState = {
+### Works Filter State
+```typescript
+type WorksFilterState = {
   dateRange: {
     from: Date | null;
     to: Date | null;
@@ -31,15 +41,20 @@ export type WorksFilterState = {
   sort: string[];
   subject: string;
 };
+```
 
-
-export interface QuickMetric {
+### Quick Metric Interface
+```typescript
+interface QuickMetric {
   title: string;
   value: string | number;
   description: string;
 }
+```
 
-export interface WorksMetricsState {
+### Works Metrics State
+```typescript
+interface WorksMetricsState {
   quickMetrics: {
     totalPapers: number;
     totalCitations: number;
@@ -64,3 +79,16 @@ export interface WorksMetricsState {
     openAccess: Record<string, number>;
   };
 }
+```
+
+## Usage
+- Import types using: `import { TypeName } from '@/libs/types';`
+- Used throughout the application for type safety
+- Provides centralized type management
+
+## Best Practices
+- Keep types DRY (Don't Repeat Yourself)
+- Use strict typing
+- Document complex types
+- Use meaningful naming
+- Keep interfaces focused

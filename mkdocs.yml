@@ -1,0 +1,83 @@
+site_name: Discover Documentation
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - home: index.md
+  - frontend:
+    - architecture:
+      - overview: frontend/architecture/project-structure.md
+      - data flow: frontend/architecture/data-flow.md
+    - core:
+      - layout: frontend/app/layout.md
+      - page: frontend/app/page.md
+    - routes:
+      - funding: frontend/app/routes/funding/page.md
+      - journals: frontend/app/routes/journals/page.md
+      - researchers: frontend/app/routes/researchers/page.md
+      - topics: frontend/app/routes/topics/page.md
+      - works:
+        - overview: frontend/app/routes/works/page.md
+        - components:
+          - filter modal: frontend/app/routes/works/components/FilterModal.md
+          - research table: frontend/app/routes/works/components/ResearchTable.md
+          - quick metrics section: frontend/app/routes/works/components/QuickMetricsSection.md
+        - wrappers:
+          - filter: frontend/app/routes/works/wrappers/FilterWrapper.md
+          - pagination: frontend/app/routes/works/wrappers/PaginationWrapper.md
+          - metrics: frontend/app/routes/works/wrappers/ResearchMetricsWrapper.md
+        - presets: frontend/app/routes/works/presets/works.md
+    - components:
+      - charts:
+        - double bar: frontend/components/charts/DoubleBarChart.md
+        - stacked bar: frontend/components/charts/StackedBarChart.md
+      - filter: frontend/components/Filter.md
+      - metrics table: frontend/components/MetricsCountTable.md
+      - navigation: frontend/components/NavBar.md
+      - quick metrics:
+        - card: frontend/components/QuickMetricCard.md
+    - utilities:
+      - hooks: frontend/hooks/getWorksMetricsData.md
+      - types: frontend/libs/types.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+  - pymdownx.emoji
+  - def_list
+  - meta
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+extra:
+  generator: false
+

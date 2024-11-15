@@ -1,6 +1,6 @@
-import { FilterState } from "@/libs/types";
+import { WorksFilterState } from "@/libs/types";
 
-export const initialFilters: FilterState = {
+export const initialFilters: WorksFilterState = {
   dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') },
   search_query: "",
   type: ['article', 'preprint'],
