@@ -33,9 +33,8 @@ The frontend is built using Next.js 13+ and follows a component-based architectu
 
 ## Documentation Structure
 
-- `/frontend` - Frontend documentation
-  - `/architecture` - System architecture and patterns
-  - `/components` - Reusable component documentation
-  - `/app` - Route-specific components and pages
-  - `/hooks` - Custom React hooks
-  - `/libs` - Type definitions and utilities
+
+  - `frontend/architecture` - System architecture and patterns
+  - `frontend/core` - Home page and layout for all pages
+
+The structure for the other pages matches the frontend directory of discover.
