@@ -31,7 +31,7 @@ export function Navbar({ opened, onToggle }: NavbarProps) {
 
   const handleNavigation = (path: string) => {
     router.push(path);
-    onToggle(); // Close drawer when navigating on mobile
+    onToggle(); 
   };
 
   const isActive = (path: string) => pathname === path;
@@ -145,6 +145,7 @@ export function Navbar({ opened, onToggle }: NavbarProps) {
         title="Menu"
         hiddenFrom="sm"
         zIndex={1100}
+        lockScroll={false}
       >
         <NavLinks />
       </Drawer>
