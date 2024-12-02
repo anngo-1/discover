@@ -1,35 +1,37 @@
 'use client';
-import { 
-  Paper, 
-  Container,
+import {
   Burger,
   Drawer,
   Stack,
   Text,
-  Button,
+  UnstyledButton,
   Group,
-  rem,
-  Divider,
+  Box,
+  Title,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useRouter, usePathname } from 'next/navigation';
+import { Home, BookOpen, Users, Tags, Coins } from 'lucide-react';
 
 const navigationItems = [
-  { label: 'Works', href: '/works' },
-  { label: 'Journals/Publishers', href: '/journals' },
-  { label: 'Researchers', href: '/researchers' },
-  { label: 'Topics', href: '/topics' },
-  { label: 'Funding', href: '/funding' },
+  { label: 'Research Output', href: '/works', icon: <Home size={20} /> },
+  { label: 'Journals/Publishers', href: '/journals', icon: <BookOpen size={20} /> },
+  { label: 'Researchers', href: '/researchers', icon: <Users size={20} /> },
+  { label: 'Topics', href: '/topics', icon: <Tags size={20} /> },
+  { label: 'Funding', href: '/funding', icon: <Coins size={20} /> },
 ];
 
-export function Navbar() {
+interface NavbarProps {
+  opened: boolean;
+  onToggle: () => void;
+}
+
+export function Navbar({ opened, onToggle }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [opened, { toggle, close }] = useDisclosure(false);
 
   const handleNavigation = (path: string) => {
     router.push(path);
-    close();
+    onToggle(); // Close drawer when navigating on mobile
   };
 
   const isActive = (path: string) => pathname === path;
@@ -112,7 +114,7 @@ export function Navbar() {
       >
         <Group h={60} px="md" justify="space-between">
           <Title order={4}>Discover</Title>
-          <Burger opened={opened} onClick={toggle} size="sm" />
+          <Burger opened={opened} onClick={onToggle} size="sm" />
         </Group>
       </Box>
 
@@ -137,41 +139,15 @@ export function Navbar() {
       {/* Mobile Drawer */}
       <Drawer
         opened={opened}
-        onClose={close}
-        size="xs"
-        hiddenFrom="md"
-        position="right"
-        withCloseButton={false}
+        onClose={onToggle}
+        size="75%"
+        padding="md"
+        title="Menu"
+        hiddenFrom="sm"
+        zIndex={1100}
       >
-        <Stack p="md" gap="md">
-          <Group justify="space-between">
-            <Text size="lg" fw={600}>Menu</Text>
-            <Burger opened={opened} onClick={close} size="sm" />
-          </Group>
-          
-          <Divider />
-          
-          <Stack gap="xs">
-            {navigationItems.map((item) => (
-              <Button
-                key={item.href}
-                variant={isActive(item.href) ? "light" : "subtle"}
-                color={isActive(item.href) ? "blue" : "gray"}
-                fullWidth
-                onClick={() => handleNavigation(item.href)}
-                styles={{
-                  root: {
-                    justifyContent: 'flex-start',
-                    height: rem(42),
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </Stack>
-        </Stack>
+        <NavLinks />
       </Drawer>
-    </Paper>
+    </>
   );
 }

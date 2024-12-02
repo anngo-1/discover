@@ -5,6 +5,7 @@ import { TrendingUp, FileText, Users, Star } from 'lucide-react';
 import useMetricsData from '@/hooks/getWorksMetricsData';
 import { WorksFilterState } from '@/libs/types';
 import { MetricCategory, MetricsCountTable, MetricData } from '@/components/MetricsCountTable';
+
 const CHART_COLORS = [
   '#1c7ed6', // Blue
   '#37b24d', // Green
@@ -42,26 +43,36 @@ const CHART_COLORS = [
   '#34495e'  // Charcoal
 ];
 
-const publicationTypes = [
-  'articles',
-  'reviews',
-  'clinicalTrials',
-  'editorialCount',
-  'letterToEditorCount',
-  'otherConferenceCount',
-  'otherJournalCount',
-  'referenceWorkCount',
-  'researchArticleCount',
-  'researchChapterCount'
-];
-
 interface SdgCategory {
   name: string;
   sdg_count: number;
 }
+
+type PublicationType = 'articles' | 'reviews' | 'editorialCount' | 'letterToEditorCount' | 
+  'otherConferenceCount' | 'otherJournalCount' | 'referenceWorkCount' | 'researchChapterCount';
+
+interface PublicationTypeConfig {
+  key: PublicationType;
+  name: string;
+  color: string;
+}
+
 interface TopConcept {
   concept_text: string;
   concept_count: number;
+}
+
+interface TooltipPayloadItem {
+  value: number;
+  dataKey: string;
+  name: string;
+  color: string;
+}
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: string;
 }
 
 export interface YearMetrics {
@@ -94,21 +105,15 @@ interface QuickMetricCardProps {
   subtitle?: string;
 }
 
-interface TooltipProps {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}
-
-
 const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filters }) => {
   const { data: metrics, loading, error } = useMetricsData(filters);
   const [selectedYear, setSelectedYear] = useState<string>('9999');
   const [activeTab, setActiveTab] = useState<string>('publications');
+
   const alltimeSeriesData = useMemo(() => {
     if (!metrics?.data) return [];
     return Object.entries(metrics.data as Record<string, YearMetrics>)
-      .filter(([year, _]) => year == '9999') // Filter out '9999'
+      .filter(([year]) => year === '9999')
       .map(([year, d]) => ({
         year,
         articles: d.research_article_count,
@@ -121,12 +126,12 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
         collaboratingCountries: d.avg_collaborating_countries,
         collaboratingInstitutions: d.avg_collaborating_institutions,
         total: d.total_publications,
-        editorialCount: d.editorial_count, // Added field
-        letterToEditorCount: d.letter_to_editor_count, // Added field
-        otherConferenceCount: d.other_conference_count, // Added field
-        otherJournalCount: d.other_journal_count, // Added field
-        referenceWorkCount: d.reference_work_count, // Added field
-        researchChapterCount: d.research_chapter_count, // Added field
+        editorialCount: d.editorial_count,
+        letterToEditorCount: d.letter_to_editor_count,
+        otherConferenceCount: d.other_conference_count,
+        otherJournalCount: d.other_journal_count,
+        referenceWorkCount: d.reference_work_count,
+        researchChapterCount: d.research_chapter_count,
         top_concepts: d.top_concepts.map(cat => ({
           concept_name: cat.concept_text,
           concept_count: cat.concept_count
@@ -142,7 +147,7 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
   const timeSeriesData = useMemo(() => {
     if (!metrics?.data) return [];
     return Object.entries(metrics.data as Record<string, YearMetrics>)
-      .filter(([year, _]) => year !== '9999') // Filter out '9999'
+      .filter(([year]) => year !== '9999')
       .map(([year, d]) => ({
         year,
         articles: d.research_article_count,
@@ -155,12 +160,12 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
         collaboratingCountries: d.avg_collaborating_countries,
         collaboratingInstitutions: d.avg_collaborating_institutions,
         total: d.total_publications,
-        editorialCount: d.editorial_count, // Added field
-        letterToEditorCount: d.letter_to_editor_count, // Added field
-        otherConferenceCount: d.other_conference_count, // Added field
-        otherJournalCount: d.other_journal_count, // Added field
-        referenceWorkCount: d.reference_work_count, // Added field
-        researchChapterCount: d.research_chapter_count, // Added field
+        editorialCount: d.editorial_count,
+        letterToEditorCount: d.letter_to_editor_count,
+        otherConferenceCount: d.other_conference_count,
+        otherJournalCount: d.other_journal_count,
+        referenceWorkCount: d.reference_work_count,
+        researchChapterCount: d.research_chapter_count,
         top_concepts: d.top_concepts.map(cat => ({
           concept_name: cat.concept_text,
           concept_count: cat.concept_count
@@ -173,12 +178,10 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
       .sort((a, b) => parseInt(a.year) - parseInt(b.year));
   }, [metrics]);
 
-
   const yearOptions = useMemo(() => [
     { value: '9999', label: 'All Years' },
     ...timeSeriesData.map(d => ({ value: d.year, label: d.year }))
   ], [timeSeriesData]);
-
 
   const currentMetrics = useMemo(() => {
     if (selectedYear === '9999') {
@@ -205,7 +208,7 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
       sdgCategories: yearData.sdgCategories || []
     } : null;
   }, [timeSeriesData, alltimeSeriesData, selectedYear]);
-  
+
   const metricCategories: MetricCategory[] = useMemo(() => [
     {
       id: 'sdgCategories',
@@ -225,51 +228,66 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
       }, {} as MetricData),
       searchable: true
     }
-  ], [currentMetrics]); // Add currentMetrics as a dependency
+  ], [currentMetrics]);
+
   const filteredData = useMemo(() =>
     selectedYear === '9999' ? timeSeriesData : timeSeriesData.filter(d => d.year === selectedYear),
     [timeSeriesData, selectedYear]
   );
 
+  const typeConfigs: PublicationTypeConfig[] = useMemo(() => [
+    { key: 'articles', name: 'Research Articles', color: CHART_COLORS[0] },
+    { key: 'reviews', name: 'Reviews', color: CHART_COLORS[1] },
+    { key: 'editorialCount', name: 'Editorial Count', color: CHART_COLORS[2] },
+    { key: 'letterToEditorCount', name: 'Letters to Editors', color: CHART_COLORS[3] },
+    { key: 'otherConferenceCount', name: 'Other Conference', color: CHART_COLORS[4] },
+    { key: 'otherJournalCount', name: 'Other Journals', color: CHART_COLORS[5] },
+    { key: 'referenceWorkCount', name: 'Reference Works', color: CHART_COLORS[6] },
+    { key: 'researchChapterCount', name: 'Research Chapters', color: CHART_COLORS[7] }
+  ], []);
+
+  const activePublicationTypes = useMemo(() => {
+    if (!filteredData?.length) return typeConfigs;
+    return typeConfigs;
+  }, [filteredData, typeConfigs]);
+
   const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
   
-    // Define the publication types and impact/collaboration metrics that will be handled in the tooltip
-  
-    const impactMetrics = ['avgCitations', 'avgRecentCitations', 'altmetricScore'];
-    const collaborationMetrics = ['collaboratingInstitutions', 'collaboratingCountries'];
-  
-    // Filter payload for publication types, impact metrics, and collaboration data
     const sortedPayload = [...payload]
-      .filter(item => 
-        publicationTypes.includes(item.dataKey) || 
-        impactMetrics.includes(item.dataKey) || 
-        collaborationMetrics.includes(item.dataKey)
-      )
-      .sort((a, b) => (b.value || 0) - (a.value || 0)); // Sort by count or value in descending order
+      .sort((a, b) => (b.value || 0) - (a.value || 0));
   
-    // Calculate the total for the relevant metrics
-    const total = sortedPayload.reduce((sum, item) => sum + (item.value || 0), 0);
+    const countBasedMetrics = [
+      'articles', 'reviews', 'editorialCount', 'letterToEditorCount',
+      'otherConferenceCount', 'otherJournalCount', 'referenceWorkCount',
+      'researchChapterCount', 'clinicalTrials', 'total'
+    ];
+  
+    const countTotal = sortedPayload
+      .filter(item => countBasedMetrics.includes(item.dataKey))
+      .reduce((sum, item) => sum + (item.value || 0), 0);
   
     return (
       <Paper p="md" withBorder shadow="sm" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
         <Text fw={700} mb="xs" size="sm">{label}</Text>
-        {sortedPayload.map((item: any) => {
-          const isPublicationType = publicationTypes.includes(item.dataKey);
-          const percentage = isPublicationType ? ` (${((item.value / total) * 100).toFixed(1)}%)` : '';
-  
+        {sortedPayload.map((item) => {
+          if (item.value <= 0) return null;
+          
+          const isCountBased = countBasedMetrics.includes(item.dataKey);
           return (
             <Text key={item.name} size="sm" mb={4} style={{ color: item.color }}>
               {item.name}: {item.value.toLocaleString(undefined, {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1
-              })}{percentage}
+              })}
+              {isCountBased && countTotal > 0 && ` (${((item.value / countTotal) * 100).toFixed(1)}%)`}
             </Text>
           );
         })}
       </Paper>
     );
   };
+
   const QuickMetricCard: React.FC<QuickMetricCardProps> = ({ title, value, icon, subtitle }) => (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Group>
@@ -320,95 +338,93 @@ const ResearchMetricsWrapper: React.FC<{ filters: WorksFilterState }> = ({ filte
             value={(currentMetrics?.avgAltmetric || 0).toFixed(2)}
             icon={<Star size={18} />}
             subtitle={currentMetrics?.subtitle}
-          />
-          <QuickMetricCard
-            title="Avg Collaborating Institutions"
-            value={(currentMetrics?.avgCollabs || 0).toFixed(2)}
-            icon={<Users size={18} />}
-            subtitle={currentMetrics?.subtitle}
-          />
-        </SimpleGrid>
-
-        <Paper shadow="sm" p="md" radius="md" withBorder>
-          {/* Use Flex with column direction on mobile, row on larger screens */}
-          <Flex
-            direction={{ base: 'column', md: 'row' }}
-            gap="sm"
-            align={{ base: 'stretch', md: 'flex-start' }}
-          >
-            <Box style={{ flex: 1, minWidth: 0 }} mt={4}>
-              <Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'publications')}>
-                <Tabs.List mb="md">
-                  <Tabs.Tab value="publications">Publication Types</Tabs.Tab>
-                  <Tabs.Tab value="impact">Impact Metrics</Tabs.Tab>
-                  <Tabs.Tab value="collaboration">Collaboration</Tabs.Tab>
-                </Tabs.List>
-
-                <Box h={430}>
-                  {loading ? (
-                    <Center h={400}><Loader size="lg" variant="bars" /></Center>
-                  ) : (
-
-                    <ResponsiveContainer width="100%" height="100%">
-                      {activeTab === 'publications' ? (
-                        <BarChart
-                          data={filteredData}
-                          barSize={60} // Increase bar width to align with x-axis labels
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Legend />
-                          <Bar dataKey="articles" fill={CHART_COLORS[0]} name="Research Articles" />
-                          <Bar dataKey="reviews" fill={CHART_COLORS[1]} name="Reviews" />
-                          <Bar dataKey="editorialCount" fill={CHART_COLORS[2]} name="Editorial Count" /> {/* New data */}
-                          <Bar dataKey="letterToEditorCount" fill={CHART_COLORS[3]} name="Letters to Editors" /> {/* New data */}
-                          <Bar dataKey="otherConferenceCount" fill={CHART_COLORS[4]} name="Other Conference" /> {/* New data */}
-                          <Bar dataKey="otherJournalCount" fill={CHART_COLORS[5]} name="Other Journals" /> {/* New data */}
-                          <Bar dataKey="referenceWorkCount" fill={CHART_COLORS[6]} name="Reference Works" /> {/* New data */}
-                          <Bar dataKey="researchChapterCount" fill={CHART_COLORS[7]} name="Research Chapters" /> {/* New data */}
-                        </BarChart>
-                      ) : activeTab === 'impact' ? (
-                        <LineChart data={filteredData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis yAxisId="left" />
-                          <YAxis yAxisId="right" orientation="right" />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Legend />
-                          <Line yAxisId="left" type="monotone" dataKey="avgCitations" stroke={CHART_COLORS[0]} name="Avg Citations" />
-                          <Line yAxisId="left" type="monotone" dataKey="avgRecentCitations" stroke={CHART_COLORS[1]} name="Recent Citations" />
-                          <Line yAxisId="right" type="monotone" dataKey="altmetricScore" stroke={CHART_COLORS[2]} name="Altmetric Score" />
-                        </LineChart>
-                      ) : (
-                        <LineChart data={filteredData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Legend />
-                          <Line type="monotone" dataKey="collaboratingInstitutions" stroke={CHART_COLORS[0]} name="Avg Institutions" />
-                          <Line type="monotone" dataKey="collaboratingCountries" stroke={CHART_COLORS[1]} name="Avg Countries" />
-                        </LineChart>
-                      )}
-                    </ResponsiveContainer>
-                  )}
-                </Box>
-              </Tabs>
-            </Box>
-
-            {/* Right side - MetricsCountTable */}
-            <Box style={{ flex: 1, minWidth: 0 }}>
-              <MetricsCountTable
-                categories={metricCategories}
-                isLoading={loading}
-              />
-            </Box>
-          </Flex>
-        </Paper>
-      </Stack>
-    </Container>
-  );
-}
-export default ResearchMetricsWrapper
+            />
+            <QuickMetricCard
+              title="Avg Collaborating Institutions"
+              value={(currentMetrics?.avgCollabs || 0).toFixed(2)}
+              icon={<Users size={18} />}
+              subtitle={currentMetrics?.subtitle}
+            />
+          </SimpleGrid>
+  
+          <Paper shadow="sm" p="md" radius="md" withBorder>
+            <Flex
+              direction={{ base: 'column', md: 'row' }}
+              gap="sm"
+            >
+              <Box style={{ flex: 1, minWidth: 0 }} mt={4}>
+                <Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'publications')}>
+                  <Tabs.List mb="md">
+                    <Tabs.Tab value="publications">Publication Types</Tabs.Tab>
+                    <Tabs.Tab value="impact">Impact Metrics</Tabs.Tab>
+                    <Tabs.Tab value="collaboration">Collaboration</Tabs.Tab>
+                  </Tabs.List>
+  
+                  <Box h={430}>
+                    {loading ? (
+                      <Center h={400}><Loader size="lg" variant="bars" /></Center>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        {activeTab === 'publications' ? (
+                          <BarChart
+                            data={filteredData}
+                            barSize={60}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="year" />
+                            <YAxis />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            {activePublicationTypes.map((type) => (
+                              <Bar 
+                                key={type.key}
+                                dataKey={type.key}
+                                fill={type.color}
+                                name={type.name}
+                                hide={filteredData.every(d => !d[type.key] || d[type.key] === 0)}
+                              />
+                            ))}
+                          </BarChart>
+                        ) : activeTab === 'impact' ? (
+                          <LineChart data={filteredData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="year" />
+                            <YAxis yAxisId="left" />
+                            <YAxis yAxisId="right" orientation="right" />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Line yAxisId="left" type="monotone" dataKey="avgCitations" stroke={CHART_COLORS[0]} name="Avg Citations" />
+                            <Line yAxisId="left" type="monotone" dataKey="avgRecentCitations" stroke={CHART_COLORS[1]} name="Recent Citations" />
+                            <Line yAxisId="right" type="monotone" dataKey="altmetricScore" stroke={CHART_COLORS[2]} name="Altmetric Score" />
+                          </LineChart>
+                        ) : (
+                          <LineChart data={filteredData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="year" />
+                            <YAxis />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Line type="monotone" dataKey="collaboratingInstitutions" stroke={CHART_COLORS[0]} name="Avg Institutions" />
+                            <Line type="monotone" dataKey="collaboratingCountries" stroke={CHART_COLORS[1]} name="Avg Countries" />
+                          </LineChart>
+                        )}
+                      </ResponsiveContainer>
+                    )}
+                  </Box>
+                </Tabs>
+              </Box>
+  
+              <Box style={{ flex: 1, minWidth: 0 }}>
+                <MetricsCountTable
+                  categories={metricCategories}
+                  isLoading={loading}
+                />
+              </Box>
+            </Flex>
+          </Paper>
+        </Stack>
+      </Container>
+    );
+  };
+  
+  export default ResearchMetricsWrapper;

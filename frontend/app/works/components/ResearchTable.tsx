@@ -43,7 +43,7 @@ const ResearchTable: React.FC<ResearchTableProps> = ({ publications }) => {
 };
 
 const PublicationCard: React.FC<{ publication: Publication }> = ({ publication }) => {
-  const { id, title, authors, publication_date, journal, cited_by_count, doi } = publication;
+  const { title, authors, publication_date, cited_by_count, doi } = publication;
 
   const formattedDate = new Date(publication_date).toLocaleDateString('en-US', {
     year: 'numeric',

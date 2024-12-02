@@ -1,11 +1,10 @@
 'use client';
-
-import { AppShell, MantineProvider, Box, createTheme, LoadingOverlay } from '@mantine/core';
-import { Navbar } from '@/components/NavBar';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import '@mantine/carousel/styles.css';
+import { AppShell, MantineProvider, Box, createTheme, LoadingOverlay } from '@mantine/core';
+import { Navbar } from '@/components/NavBar';
 import { useState, useEffect } from 'react';
 
 const theme = createTheme({
@@ -17,9 +16,11 @@ const theme = createTheme({
         main: {
           transition: 'all 0.3s ease',
           backgroundColor: theme.white,
+          borderLeft: 'none',
         },
         navbar: {
           transition: 'all 0.3s ease',
+          border: 'none',
           '&:hover': {
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
           }
@@ -51,12 +52,11 @@ export default function RootLayout({
   }, []);
 
   return (
-    
     <html lang="en" data-mantine-color-scheme="light">
       <head>
         <meta name="color-scheme" content="light" />
       </head>
-      <body>
+      <body style={{ margin: 0, padding: 0 }}>
         <MantineProvider theme={theme}>
           <AppShell
             header={{ height: { base: 60, sm: 0 } }}
@@ -68,38 +68,45 @@ export default function RootLayout({
             padding="md"
             transitionDuration={300}
             transitionTimingFunction="ease"
+            layout="alt"
           >
             <LoadingOverlay
               visible={isLoading}
-              loaderProps={{ 
+              loaderProps={{
                 type: "bars",
                 color: "blue.6",
                 size: "xl"
               }}
-              overlayProps={{ 
+              overlayProps={{
                 blur: 3,
                 backgroundOpacity: 0.7,
               }}
             />
-            
-            <AppShell.Header 
+            <AppShell.Header
               className="transition-all duration-300 hover:shadow-md"
               style={{ backgroundColor: 'white' }}
             >
               <Box hiddenFrom="sm" className="h-full flex items-center">
-                <Navbar />
+                <Navbar opened={opened} onToggle={() => setOpened(o => !o)} />
               </Box>
             </AppShell.Header>
-
             <AppShell.Navbar
               className="transition-all duration-300 hover:shadow-lg"
-              style={{ backgroundColor: 'white' }}
+              style={{
+                backgroundColor: 'white',
+              }}
             >
-              <Box visibleFrom="sm" className="h-full">
-                <Navbar />
+              <Box
+                visibleFrom="sm"
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Navbar opened={opened} onToggle={() => setOpened(o => !o)} />
               </Box>
             </AppShell.Navbar>
-
             <AppShell.Main>
               {children}
             </AppShell.Main>
@@ -107,6 +114,5 @@ export default function RootLayout({
         </MantineProvider>
       </body>
     </html>
-    
   );
 }

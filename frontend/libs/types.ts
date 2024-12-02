@@ -30,7 +30,46 @@ export type WorksFilterState = {
   has_doi: boolean;
   sort: string[];
   subject: string;
+  // New additions
+  authors: {
+    name: string;
+    strict: boolean; // true for exact match
+  }[];
+  metrics: {
+    fieldCitationRatio: {
+      min: number | null;
+      max: number | null;
+    };
+    relativeCitationRatio: {
+      min: number | null;
+      max: number | null;
+    };
+  };
+  organizations: {
+    research: string[]; // GRID IDs
+    funding: string[]; // GRID IDs
+  };
+  countries: {
+    research: string[];
+    funding: string[];
+  };
+  publicationIds: {
+    doi?: string;
+    pmid?: string;
+    pmcid?: string;
+  };
+  hasFullText: boolean;
+  documentType: {
+    classification?: string;
+    isCitable?: boolean;
+  };
+  journalLists?: string[];
+  concepts?: {
+    terms: string[];
+    minRelevance: number;
+  };
 };
+
 
 export interface DimensionsFilterState {
   dateRange?: {
@@ -272,3 +311,48 @@ export interface TopNFilter {
   label: string;
 }
 
+export interface JournalFilterState {
+  dateRange: {
+    from: Date | null;
+    to: Date | null;
+  };
+  journalLists: string[];
+  search_query: string;
+  citationMetrics: {
+    minImpactFactor: number | null;
+    minCiteScore: number | null;
+    minHIndex: number | null;
+    minCitations: number | null;
+    maxCitations: number | null;
+    minFieldCitationRatio: number | null;
+    minRelativeCitationRatio: number | null;
+  };
+  publisherFilters: {
+    publishers: string[];
+    excludePublishers: string[];
+  };
+  accessType: {
+    openAccess: boolean;
+    subscription: boolean;
+    hybrid: boolean;
+  };
+  subjectAreas: string[];
+  publicationFrequency: {
+    minArticlesPerYear: number | null;
+    maxArticlesPerYear: number | null;
+  };
+  sort: string[];
+  organizations: {
+    research: string[];
+    funding: string[];
+  };
+  documentTypes: {
+    include: string[];
+    exclude: string[];
+  };
+  preprints: {
+    include: boolean;
+    exclude: boolean;
+    only: boolean;
+  };
+}
