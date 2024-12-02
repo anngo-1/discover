@@ -26,7 +26,7 @@ const Filter = <T,>({
   const [appliedFilters, setAppliedFilters] = useState<T>(initialFilters);
   const [modalFilters, setModalFilters] = useState<T>(initialFilters);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string>('Filter');
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleApplyFilters = (newFilters: T) => {  
@@ -34,7 +34,6 @@ const Filter = <T,>({
     try {
       onFiltersApplied(newFilters);  
       setAppliedFilters(newFilters);
-      setActiveFilter('Filter');
       setIsModalOpen(false);
     } catch (error) {
       notifications.show({
@@ -53,7 +52,6 @@ const Filter = <T,>({
   const handlePredefinedFilterClick = (predefinedFilter: { name: string; filters: T }) => {
     setModalFilters(predefinedFilter.filters);
     setIsModalOpen(true);
-    setActiveFilter(predefinedFilter.name);  
   };
 
   const handleCustomFilterClick = () => {
@@ -86,7 +84,7 @@ const Filter = <T,>({
       >
         <Carousel.Slide>
           <Button
-            variant={activeFilter === 'Filter' ? 'filled' : 'outline'}
+            variant={'filled'}
             leftSection={<IconFilter size="1rem" />}
             onClick={handleCustomFilterClick}
             style={{ marginLeft: '10px', height: '36px' }}
@@ -98,7 +96,7 @@ const Filter = <T,>({
         {predefinedFilters.map((filter, index) => (
           <Carousel.Slide key={index}>
             <Button
-              variant={activeFilter === filter.name ? 'filled' : 'outline'}
+         variant={'outline'}
               onClick={() => handlePredefinedFilterClick(filter)}
               style={{ marginLeft: '10px', height: '36px' }}
             >

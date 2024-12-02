@@ -31,7 +31,7 @@ const PaginationWrapper: FC<PaginationWrapperProps> = ({ filters }) => {
   const fetchPublications = async (page: number) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${host}/works/publications?page=${page}&filter=${JSON.stringify(filters)}`);
+      const response = await fetch(`${host}/works/dimensions/publications?page=${page}&filter=${JSON.stringify(filters)}`);
       if (!response.ok) {
         throw new Error(`Error fetching publications: ${response.statusText}`);
       }
