@@ -4,8 +4,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
-    - navigation.expand
-    - navigation.indexes
+    - toc.integrate
     - toc.follow
     - search.suggest
     - search.highlight
@@ -32,7 +31,7 @@ nav:
     - core:
       - layout: frontend/app/layout.md
       - page: frontend/app/page.md
-    - routes:
+    - app:
       - funding: frontend/app/routes/funding/page.md
       - journals: frontend/app/routes/journals/page.md
       - researchers: frontend/app/routes/researchers/page.md

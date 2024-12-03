@@ -81,7 +81,6 @@ class BigQuery:
         if limit:
             query += f" LIMIT {limit}"
         return self.query(dataset_name, query, as_dataframe)
-    
 
 if __name__ == "__main__":
     bq = BigQuery()
