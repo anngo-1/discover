@@ -4,3 +4,8 @@ flask-cors
 gunicorn
 asyncio
 aiohttp
+google-cloud-storage
+google-cloud-bigquery 
+pandas
+db-dtypes
+google-cloud-bigquery-storage

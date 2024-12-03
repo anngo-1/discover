@@ -20,64 +20,13 @@ import { WorksFilterState } from '@/libs/types';
 import { DatePickerInput } from '@mantine/dates';
 import { Upload, Download, X } from 'lucide-react';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
-
-const sortOptions = [
-    { value: 'display_name', label: 'Name' },
-    { value: 'cited_by_count', label: 'Citation Count' },
-    { value: 'publication_date', label: 'Publication Date' }
-];
-
-const publicationTypes = [
-    { value: 'article', label: 'Article' },
-    { value: 'book-chapter', label: 'Book Chapter' },
-    { value: 'dataset', label: 'Dataset' },
-    { value: 'preprint', label: 'Preprint' },
-    { value: 'dissertation', label: 'Dissertation' },
-    { value: 'book', label: 'Book' },
-    { value: 'review', label: 'Review Article' },
-    { value: 'paratext', label: 'Paratext' },
-    { value: 'libguides', label: 'Library Guides' },
-    { value: 'letter', label: 'Letter' },
-    { value: 'other', label: 'Other' },
-    { value: 'reference-entry', label: 'Reference Entry' },
-    { value: 'report', label: 'Report' },
-    { value: 'editorial', label: 'Editorial' },
-    { value: 'peer-review', label: 'Peer Review' },
-    { value: 'standard', label: 'Standard' },
-    { value: 'erratum', label: 'Erratum' },
-    { value: 'grant', label: 'Grant' },
-    { value: 'supplementary-materials', label: 'Supplementary Materials' },
-    { value: 'retraction', label: 'Retraction' }
-];
-
-const fieldOptions = [
-    'Agricultural and Biological Sciences',
-    'Arts and Humanities',
-    'Biochemistry, Genetics and Molecular Biology',
-    'Business, Management and Accounting',
-    'Chemical Engineering',
-    'Chemistry',
-    'Computer Science',
-    'Decision Sciences',
-    'Earth and Planetary Sciences',
-    'Economics, Econometrics and Finance',
-    'Energy',
-    'Engineering',
-    'Environmental Science',
-    'Immunology and Microbiology',
-    'Materials Science',
-    'Mathematics',
-    'Medicine',
-    'Neuroscience',
-    'Nursing',
-    'Pharmacology, Toxicology and Pharmaceutics',
-    'Physics and Astronomy',
-    'Psychology',
-    'Social Sciences',
-    'Veterinary',
-    'Dentistry',
-    'Health Professions'
-].map(field => ({ value: field, label: field }));
+import {
+    sortOptions,
+    publicationTypes,
+    fieldOptions,
+    journalListOptions,
+    organizationOptions
+} from './FilterConstants';
 
 type FilterModalProps = {
     opened: boolean;
@@ -198,10 +147,15 @@ const FilterModal: FC<FilterModalProps> = ({
         });
     };
 
-    const SortItem = ({ sort, index }: { sort: string, index: number }) => {
+    interface SortItemProps {
+        sort: string;
+        index: number;
+    }
+
+    const SortItem: FC<SortItemProps> = ({ sort, index }) => {
         const isDesc = sort.includes(':desc');
         const baseSort = sort.replace(':desc', '');
-        const label = sortOptions.find(opt => opt.value === baseSort)?.label || baseSort;
+        const label = sortOptions.find((opt: { value: string; }) => opt.value === baseSort)?.label || baseSort;
 
         return (
             <Paper p="xs" radius="sm" withBorder>
@@ -295,7 +249,7 @@ const FilterModal: FC<FilterModalProps> = ({
                         ))}
                         <Select
                             placeholder="Add sort criterion"
-                            data={sortOptions.filter(option =>
+                            data={sortOptions.filter((option: { value: string; }) =>
                                 !filters.sort?.some(sort => sort.replace(':desc', '') === option.value)
                             )}
                             value={null}
@@ -307,11 +261,16 @@ const FilterModal: FC<FilterModalProps> = ({
                     </Stack>
                 </Box>
 
+            
                 <MultiSelect
                     label="Types of Work to Include"
                     data={publicationTypes}
                     value={filters.type ?? []}
-                    onChange={(value) => setFilters(prev => ({ ...prev, type: value }))}
+                    onChange={(value) => setFilters(prev => ({ 
+                        ...prev, 
+                        type: value,
+                        excludeTypes: [] 
+                    }))}
                     placeholder="Select publication types"
                     clearable
                     searchable
@@ -339,6 +298,55 @@ const FilterModal: FC<FilterModalProps> = ({
                     clearable
                     searchable
                     maxDropdownHeight={200}
+                    size="sm"
+                />
+
+                <Box>
+                    <Text size="sm" fw={500} mb={8}>Research Organizations</Text>
+                    <Stack gap="xs">
+                        <MultiSelect
+                            label="Include Organizations"
+                            placeholder="Select organizations to include"
+                            data={organizationOptions}
+                            value={filters.organizations.research}
+                            onChange={(value) => setFilters(prev => ({
+                                ...prev,
+                                organizations: {
+                                    ...prev.organizations,
+                                    research: value
+                                }
+                            }))}
+                            clearable
+                            searchable
+                            size="sm"
+                        />
+                        <MultiSelect
+                            label="Exclude Organizations"
+                            placeholder="Select organizations to exclude"
+                            data={organizationOptions}
+                            value={filters.organizations.funding}
+                            onChange={(value) => setFilters(prev => ({
+                                ...prev,
+                                organizations: {
+                                    ...prev.organizations,
+                                    funding: value
+                                }
+                            }))}
+                            clearable
+                            searchable
+                            size="sm"
+                        />
+                    </Stack>
+                </Box>
+
+                <MultiSelect
+                    label="Journal Lists"
+                    data={journalListOptions}
+                    value={filters.journalLists ?? []}
+                    onChange={(value) => setFilters(prev => ({ ...prev, journalLists: value }))}
+                    placeholder="Select journal lists"
+                    clearable
+                    searchable
                     size="sm"
                 />
 

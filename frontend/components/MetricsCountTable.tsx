@@ -2,12 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Tabs, Paper, Text, Group, Loader, Center, Stack, ScrollArea, TextInput, Box } from '@mantine/core';
 import { debounce } from 'lodash';
 
-type MetricData = Record<string, number>;
+export type MetricData = Record<string, number>;
 
 export interface MetricCategory {
   id: string;
   label: string;
-  data: MetricData;
+  data: MetricData;  
   searchable?: boolean;
 }
 
@@ -24,7 +24,7 @@ export const MetricsCountTable = ({
 }: MetricsCountTableProps) => {
   const [activeTab, setActiveTab] = useState<string | null>(defaultActiveTab || categories[0]?.id || null);
   const [searchTerm, setSearchTerm] = useState<string>('');
-
+  console.log(categories)
   // Debounced search handler
   const debouncedSearch = useMemo(() => debounce((term: string) => setSearchTerm(term), 300), []);
 
@@ -54,14 +54,14 @@ export const MetricsCountTable = ({
   const renderMetricsList = (metrics: MetricData) => {
     const total = getTotalValue(metrics);
     const filteredMetrics = getFilteredMetrics(metrics);
-
+    
     return (
       <ScrollArea h={350} scrollbarSize={8}>
         <Stack gap="xs">
           {Object.entries(filteredMetrics).map(([name, value]) => (
             <Paper 
               key={name} 
-              p="md" 
+              p="sm" 
               withBorder 
               radius="sm"
               bg="gray.0"
@@ -91,15 +91,13 @@ export const MetricsCountTable = ({
       style={(theme) => ({
         width: '100%',
         maxWidth: '800px',
-        margin: '0 auto',
         [`@media (maxWidth: ${theme.breakpoints.sm})`]: {
-          maxWidth: '100%',
-          padding: theme.spacing.xs,
+          maxWidth: '100%'
         },
       })}
     >
       <Paper shadow="sm" radius="md" withBorder h={500}>
-        <Tabs value={activeTab} onChange={setActiveTab} variant="default" h="100%">
+        <Tabs value={activeTab} onChange={setActiveTab} variant="default" h="100%" >
           <Tabs.List grow style={{ borderBottom: '1px solid #eee' }}>
             {categories.map((category) => (
               <Tabs.Tab 

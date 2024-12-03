@@ -1,12 +1,73 @@
 import json
 from flask import jsonify, request
+import numpy as np
+import pandas as pd
 import requests
 from utils import INSTITUTION_ID
 from utils.date_utils import determine_scale, generate_filters
 from utils.metrics_utils import fetch_groupings, fetch_metrics, transform_group_data, transform_open_access_data
 from utils.works_filter import generate_filter_strings
 from . import work_data_bp
+from bigquery.bq import BigQuery
+from bigquery.dimensions import DimensionsAnalytics
+import datetime
+import asyncio
 
+
+bq = BigQuery()
+bq.add_dataset(
+    name='publications',
+    project_id='ucsd-discover',
+    dataset='dimensions',
+    table='ucsd_publications',
+    billing_project_id='ucsd-discover'
+)
+analytics = DimensionsAnalytics(bq)
+@work_data_bp.route('/dimensions/stats', methods=['GET'])
+def get_dimensions_stats():
+    try:
+        filter = json.loads(request.args.get('filter', '{}'))
+        result = analytics.publication_analytics.get_basic_stats('publications', filter)
+        
+        stats_dict = {}
+        for _, row in result.iterrows():
+            year = int(row['year']) if pd.notna(row['year']) else None
+            if year is None:
+                continue
+                
+            stats_dict[year] = {
+                col: row[col].tolist() if isinstance(row[col], np.ndarray) 
+                else int(row[col]) if isinstance(row[col], np.integer) 
+                else float(row[col]) if isinstance(row[col], np.floating)
+                else None if pd.isna(row[col])
+                else row[col]
+                for col in result.columns if col != 'year'
+            }
+
+        if not stats_dict:
+            return jsonify({
+                'status': 'success',
+                'data': {},
+                'summary': {'total_years': 0, 'year_range': {'earliest': None, 'latest': None}},
+                'metadata': {'filters_applied': filter}
+            })
+
+        return jsonify({
+            'status': 'success',
+            'data': stats_dict,
+            'summary': {
+                'total_years': len(stats_dict),
+                'year_range': {'earliest': min(stats_dict.keys()), 'latest': max(stats_dict.keys())}
+            },
+            'metadata': {'filters_applied': filter}
+        })
+
+    except Exception as e:
+        print(f"Error in get_dimensions_stats: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+
+    
 @work_data_bp.route('/group_metrics', methods=['GET'])
 def fetch_groupings_endpoint():
     """

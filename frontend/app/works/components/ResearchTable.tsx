@@ -43,7 +43,7 @@ const ResearchTable: React.FC<ResearchTableProps> = ({ publications }) => {
 };
 
 const PublicationCard: React.FC<{ publication: Publication }> = ({ publication }) => {
-  const { id, title, authors, publication_date, journal, cited_by_count, doi } = publication;
+  const { title, authors, publication_date, cited_by_count, doi } = publication;
 
   const formattedDate = new Date(publication_date).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -72,7 +72,7 @@ const PublicationCard: React.FC<{ publication: Publication }> = ({ publication }
       <Stack gap="sm">
         <Box>
           <Anchor
-            href={id}
+            href={`https://doi.org/${doi}`}
             target="_blank"
             rel="noopener noreferrer"
             underline="never"
@@ -100,9 +100,9 @@ const PublicationCard: React.FC<{ publication: Publication }> = ({ publication }
             {formattedDate}
           </Badge>
           
-          <Badge variant="outline" radius="sm" color="dark">
+          {/* <Badge variant="outline" radius="sm" color="dark">
             {journal}
-          </Badge>
+          </Badge> */}
 
           <Badge 
             variant="light" 

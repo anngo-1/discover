@@ -9,7 +9,6 @@ import {
   Box,
   Title,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useRouter, usePathname } from 'next/navigation';
 import { Home, BookOpen, Users, Tags, Coins } from 'lucide-react';
 
@@ -21,14 +20,18 @@ const navigationItems = [
   { label: 'Funding', href: '/funding', icon: <Coins size={20} /> },
 ];
 
-export function Navbar() {
+interface NavbarProps {
+  opened: boolean;
+  onToggle: () => void;
+}
+
+export function Navbar({ opened, onToggle }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [opened, { toggle, close }] = useDisclosure(false);
 
   const handleNavigation = (path: string) => {
     router.push(path);
-    close();
+    onToggle(); 
   };
 
   const isActive = (path: string) => pathname === path;
@@ -42,22 +45,49 @@ export function Navbar() {
           p="xs"
           display="block"
           w="100%"
-          styles={(theme) => ({
-            root: {
-              borderRadius: theme.radius.sm,
-              backgroundColor: isActive(item.href) ? theme.colors.blue[1] : 'transparent',
-              color: isActive(item.href) ? theme.colors.blue[9] : theme.colors.gray[7],
-              
-              '&:hover': {
-                backgroundColor: isActive(item.href) ? theme.colors.blue[2] : theme.colors.gray[1],
-                transform: 'scale(1.02)',
-                transition: 'all 0.1s ease-in-out',
-              }
+          style={{
+            borderRadius: '4px',
+            backgroundColor: isActive(item.href) ? '#e6f7ff' : 'transparent',
+            color: isActive(item.href) ? '#1e90ff' : '#666',
+            border: '1px solid transparent',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            const target = e.currentTarget;
+            if (!isActive(item.href)) {
+              target.style.backgroundColor = '#f9f9f9';
+              target.style.borderColor = '#ccc';
+              target.style.transform = 'translateX(5px)';
             }
-          })}
+          }}
+          onMouseLeave={(e) => {
+            const target = e.currentTarget;
+            if (!isActive(item.href)) {
+              target.style.backgroundColor = 'transparent';
+              target.style.borderColor = 'transparent';
+              target.style.transform = 'translateX(0)';
+            }
+          }}
+          onMouseDown={(e) => {
+            const target = e.currentTarget;
+            target.style.transform = 'translateX(5px) scale(0.98)';
+          }}
+          onMouseUp={(e) => {
+            const target = e.currentTarget;
+            target.style.transform = 'translateX(5px)';
+          }}
         >
-          <Group>
-            {item.icon}
+          <Group gap="sm">
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: isActive(item.href) ? '#1e90ff' : 'inherit',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {item.icon}
+            </Box>
             <Text size="sm" fw={isActive(item.href) ? 500 : 400}>
               {item.label}
             </Text>
@@ -84,7 +114,7 @@ export function Navbar() {
       >
         <Group h={60} px="md" justify="space-between">
           <Title order={4}>Discover</Title>
-          <Burger opened={opened} onClick={toggle} size="sm" />
+          <Burger opened={opened} onClick={onToggle} size="sm" />
         </Group>
       </Box>
 
@@ -109,12 +139,13 @@ export function Navbar() {
       {/* Mobile Drawer */}
       <Drawer
         opened={opened}
-        onClose={close}
+        onClose={onToggle}
         size="75%"
         padding="md"
         title="Menu"
         hiddenFrom="sm"
         zIndex={1100}
+        lockScroll={false}
       >
         <NavLinks />
       </Drawer>
