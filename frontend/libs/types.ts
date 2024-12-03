@@ -12,8 +12,16 @@ export interface Research {
 }
 
 
+export type LogicOperator = 'AND' | 'OR' | 'NOT'
+
+export type FilterGroup<T> = {
+  operator: LogicOperator;
+  values: T[];
+};
 
 export type WorksFilterState = {
+  [x: string]: any;
+
   dateRange: {
     from: Date | null;
     to: Date | null;
@@ -30,11 +38,36 @@ export type WorksFilterState = {
   has_doi: boolean;
   sort: string[];
   subject: string;
-  // New additions
+
+
+  researchCategories?: {
+    operator?: LogicOperator;
+    bra?: FilterGroup<string>;
+    hra?: FilterGroup<string>;
+    hrcs?: {
+      operator: LogicOperator;
+      hc?: FilterGroup<string>;
+      rac?: FilterGroup<string>;
+    };
+    icrp?: {
+      operator: LogicOperator;
+      cso?: FilterGroup<string>;
+      ct?: FilterGroup<string>;
+    };
+    rcdc?: FilterGroup<string>;
+    sdg?: FilterGroup<string>;
+    uoa?: FilterGroup<string>;
+  };
+
+ 
   authors: {
     name: string;
-    strict: boolean; // true for exact match
+    strict: boolean;
+    operator?: LogicOperator;
+    affiliationLogic?: LogicOperator;
   }[];
+
+  
   metrics: {
     fieldCitationRatio: {
       min: number | null;
@@ -44,88 +77,85 @@ export type WorksFilterState = {
       min: number | null;
       max: number | null;
     };
+    altmetricScore?: {
+      min: number | null;
+      max: number | null;
+    };
+    recentCitations?: {
+      min: number | null;
+      max: number | null;
+    };
   };
+
+  
   organizations: {
-    research: string[]; // GRID IDs
-    funding: string[]; // GRID IDs
+    research: string[];
+    funding: string[];
+    operator?: LogicOperator;
   };
+
   countries: {
     research: string[];
     funding: string[];
+    operator?: LogicOperator;
+    cities?: string[];
+    states?: string[];
   };
+
+
   publicationIds: {
     doi?: string;
     pmid?: string;
     pmcid?: string;
+    arxivId?: string;
+    isbn?: string;
+    eisbn?: string;
   };
+
   hasFullText: boolean;
   documentType: {
     classification?: string;
     isCitable?: boolean;
   };
   journalLists?: string[];
+
   concepts?: {
     terms: string[];
     minRelevance: number;
+    operator: LogicOperator;
+    matchType: 'exact' | 'partial' | 'semantic';
+  };
+
+  contentFilters?: {
+    hasAcknowledgements?: boolean;
+    hasAbstract?: boolean;
+    hasFundingSection?: boolean;
+    hasPatentIds?: boolean;
+    hasClinicalTrialIds?: boolean;
+    meshTerms?: FilterGroup<string>;
+    meshHeadings?: FilterGroup<string>;
+    publicationType?: FilterGroup<string>;
+  };
+
+  sourceFilters?: {
+    journalIds?: string[];
+    publisherIds?: string[];
+    issn?: string[];
+    eissn?: string[];
+    volume?: string;
+    issue?: string;
+    operator?: LogicOperator;
+  };
+
+
+  pubmedFilters?: {
+    meshTerms?: FilterGroup<string>;
+    meshHeadings?: FilterGroup<string>;
+    publicationTypes?: FilterGroup<string>;
+    keywords?: FilterGroup<string>;
+    operator?: LogicOperator;
   };
 };
-
-
-export interface DimensionsFilterState {
-  dateRange?: {
-    from: Date | null;
-    to: Date | null;
-  };
-  search_query?: string;
-  type?: string[];
-  fields?: string[];
-  excludeFields?: string[];
-  citationCount?: {
-    min: number | null;
-    max: number | null;
-  };
-  openAccess?: boolean;
-  has_doi?: boolean;
-  sort?: SortOption[];
-  subject?: string;
-  // New suggested filters based on schema
-  metrics?: {
-    fieldCitationRatio?: {
-      min: number;
-      max: number;
-    };
-    relativeCitationRatio?: {
-      min: number;
-      max: number;
-    };
-  };
-  categories?: {
-    forCode?: string;
-    sdg?: string;
-    rcdc?: string;
-    hrcs?: string;
-  };
-  journal?: {
-    name?: string;
-    issn?: string;
-  };
-  authors?: {
-    name?: string;
-    orcid?: string;
-  };
-  organizations?: {
-    research?: string[];
-    funding?: string[];
-  };
-  location?: {
-    countries?: string[];
-    cities?: string[];
-  };
-  documentType?: {
-    classification?: string;
-    isCitable?: boolean;
-  };
-}
 
 export type SortOption = {
   field: string;

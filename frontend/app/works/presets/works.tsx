@@ -43,10 +43,7 @@ export const initialFilters: WorksFilterState = {
         isCitable: true
     },
     journalLists: [],
-    concepts: {
-        terms: [],
-        minRelevance: 0.5
-    }
+
 };
 
 export const worksPredefinedFilters = [
@@ -88,10 +85,6 @@ export const worksPredefinedFilters = [
             dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') },
             has_doi: true,
             sort: ['citations_count:desc', 'date_normal:desc'],
-            concepts: {
-                terms: ['artificial intelligence', 'machine learning', 'deep learning'],
-                minRelevance: 0.7
-            },
             documentType: {
                 classification: 'RESEARCH_ARTICLE',
                 isCitable: true

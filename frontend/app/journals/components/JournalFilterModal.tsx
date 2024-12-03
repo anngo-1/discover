@@ -1,551 +1,378 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import {
-    Modal,
-    Group,
-    Button,
-    TextInput,
-    MultiSelect,
-    NumberInput,
-    Stack,
-    Text,
-    ActionIcon,
-    Tooltip,
-    Select,
-    Paper,
-    Divider,
-    Box,
-    Checkbox,
-    Tabs
+  Modal, Group, Button, TextInput, MultiSelect, NumberInput,
+  Stack, Text, Paper, Accordion, Checkbox
 } from '@mantine/core';
-import { JournalFilterState } from '@/libs/types';
 import { DatePickerInput } from '@mantine/dates';
-import { Upload, Download, X, Filter, TrendingUp, Building2, FileText, BookOpen } from 'lucide-react';
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
+import { Upload, Download, Search } from 'lucide-react';
 import {
-    sortOptions,
-    documentTypeOptions,
-    publisherOptions,
-    citationRanges,
-    fieldOptions,
-    journalListOptions,
-    organizationOptions,
-} from './JournalFilterConstants'
+  documentTypeOptions, publisherOptions,
+  journalListOptions, organizationOptions,
+  fieldOptions,
+} from './JournalFilterConstants';
+import { JournalFilterState } from '@/libs/types';
 
-interface JournalFilterModalProps {
-    opened: boolean;
-    onClose: () => void;
-    onApply: (filters: JournalFilterState) => void;
-    initialFilters: JournalFilterState;
-    isLoading: boolean;
+
+interface CitationMetrics {
+  minCitations: number | null;
+  maxCitations: number | null;
+  minFieldCitationRatio: number | null;
+  minRelativeCitationRatio: number | null;
 }
 
-const JournalFilterModal: FC<JournalFilterModalProps> = ({
-    opened,
-    onClose,
-    onApply,
-    initialFilters,
-    isLoading,
+
+interface Props {
+  opened: boolean;
+  onClose: () => void;
+  onApply: (filters: JournalFilterState) => void;
+  initialFilters: JournalFilterState;
+  isLoading: boolean;
+}
+
+const JournalFilterModal: FC<Props> = ({
+  opened, onClose, onApply, initialFilters, isLoading
 }) => {
-    const [filters, setFilters] = useState<JournalFilterState>(initialFilters);
-    const [activeTab, setActiveTab] = useState<string>('general');
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const [filters, setFilters] = useState<JournalFilterState>(initialFilters);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (opened) {
-            setFilters({ ...initialFilters });
-        }
-    }, [initialFilters, opened]);
+  useEffect(() => {
+    if (opened) setFilters({ ...initialFilters });
+  }, [initialFilters, opened]);
 
-    const handleApply = async () => {
-        await onApply(filters);
-    };
+  const updateFilter = <K extends keyof JournalFilterState>(
+    key: K,
+    value: JournalFilterState[K]
+  ) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
-    const handleDateChange = (field: 'from' | 'to') => (value: Date | null) => {
-        setFilters((prev) => ({
-            ...prev,
-            dateRange: { ...prev.dateRange, [field]: value },
-        }));
-    };
+  const handleNumberChange = (
+    field: keyof CitationMetrics,
+    value: string | number | null
+  ) => {
+    updateFilter('citationMetrics', {
+      ...filters.citationMetrics,
+      [field]: value === '' ? null : typeof value === 'string' ? parseFloat(value) : value
+    });
+  };
 
-    const handleCitationMetricsChange = (field: keyof JournalFilterState['citationMetrics']) => (value: number | string) => {
-        const numberValue = typeof value === 'string' ? parseFloat(value) : value;
-        setFilters(prev => ({
-            ...prev,
-            citationMetrics: {
-                ...prev.citationMetrics,
-                [field]: !isNaN(numberValue) ? numberValue : null,
-            },
-        }));
-    };
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(filters, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'journal_filters.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
-    const handlePublisherChange = (field: 'publishers' | 'excludePublishers') => (value: string[]) => {
-        setFilters(prev => ({
-            ...prev,
-            publisherFilters: {
-                ...prev.publisherFilters,
-                [field]: value,
-            },
-        }));
-    };
-
-    const handleDocumentTypeChange = (field: 'include' | 'exclude') => (value: string[]) => {
-        setFilters(prev => ({
-            ...prev,
-            documentTypes: {
-                ...prev.documentTypes,
-                [field]: value,
-            },
-        }));
-    };
-
-    const handlePreprintChange = (field: keyof JournalFilterState['preprints']) => (value: boolean) => {
-        setFilters(prev => ({
-            ...prev,
-            preprints: {
-                ...prev.preprints,
-                [field]: value,
-            },
-        }));
-    };
-
-    const handlePublicationFrequencyChange = (field: 'minArticlesPerYear' | 'maxArticlesPerYear') => (value: number | string) => {
-        const numberValue = typeof value === 'string' ? parseFloat(value) : value;
-        setFilters(prev => ({
-            ...prev,
-            publicationFrequency: {
-                ...prev.publicationFrequency,
-                [field]: !isNaN(numberValue) ? numberValue : null,
-            }
-        }));
-    };
-
-    const handleAddSort = (value: string) => {
-        setFilters(prev => ({
-            ...prev,
-            sort: [...(prev.sort || []), `${value}:desc`]
-        }));
-    };
-
-    const handleRemoveSort = (indexToRemove: number) => {
-        setFilters(prev => ({
-            ...prev,
-            sort: prev.sort?.filter((_, index) => index !== indexToRemove) || []
-        }));
-    };
-
-    const toggleSortDirection = (index: number) => {
-        setFilters(prev => {
-            const newSort = [...(prev.sort || [])];
-            const currentSort = newSort[index];
-            if (currentSort.includes(':desc')) {
-                newSort[index] = currentSort.replace(':desc', '');
-            } else {
-                newSort[index] = `${currentSort}:desc`;
-            }
-            return { ...prev, sort: newSort };
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target?.result as string);
+        setFilters({
+          ...initialFilters,
+          ...imported,
+          dateRange: {
+            from: imported.dateRange?.from ? new Date(imported.dateRange.from) : null,
+            to: imported.dateRange?.to ? new Date(imported.dateRange.to) : null,
+          }
         });
+      } catch (error) {
+        console.error('Error importing filters:', error);
+      }
     };
+    reader.readAsText(file);
+    event.target.value = '';
+  };
 
-    const handleExportFilters = () => {
-        const filterData = JSON.stringify(filters, null, 2);
-        const blob = new Blob([filterData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'journal_filters.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
+  return (
+    <Modal opened={opened} onClose={onClose} title="Journal Analytics Filter" size="xl">
+      <Stack gap="md">
+        {/* Basic Search Section */}
+        <Paper p="md" withBorder>
+          <Stack gap="sm">
+            <TextInput
+              placeholder="Search titles and abstracts..."
+              value={filters.search_query}
+              onChange={(e) => updateFilter('search_query', e.target.value)}
+              rightSection={<Search size={16} />}
+            />
+            <Group>
+              <DatePickerInput
+                placeholder="From"
+                value={filters.dateRange.from}
+                onChange={(v) => updateFilter('dateRange', { ...filters.dateRange, from: v })}
+                clearable
+              />
+              <Text size="sm">to</Text>
+              <DatePickerInput
+                placeholder="To"
+                value={filters.dateRange.to}
+                onChange={(v) => updateFilter('dateRange', { ...filters.dateRange, to: v })}
+                clearable
+              />
+            </Group>
+          </Stack>
+        </Paper>
 
-    const handleImportClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleImportFilters = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const importedFilters = JSON.parse(e.target?.result as string);
-                const validatedFilters = {
-                    ...initialFilters,
-                    ...importedFilters,
-                    dateRange: {
-                        from: importedFilters.dateRange?.from ? new Date(importedFilters.dateRange.from) : null,
-                        to: importedFilters.dateRange?.to ? new Date(importedFilters.dateRange.to) : null,
-                    }
-                };
-                setFilters(validatedFilters);
-            } catch (error) {
-                console.error('Error importing filters:', error);
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-    };
-
-    const SortItem: FC<{ sort: string; index: number }> = ({ sort, index }) => {
-        const isDesc = sort.includes(':desc');
-        const baseSort = sort.replace(':desc', '');
-        const label = sortOptions.find((opt: { value: string; }) => opt.value === baseSort)?.label || baseSort;
-
-        return (
-            <Paper p="xs" radius="sm" withBorder>
-                <Group justify="space-between">
-                    <Text size="sm">{label}</Text>
-                    <Group gap={4}>
-                        <Tooltip label={isDesc ? "Sort Descending" : "Sort Ascending"}>
-                            <ActionIcon size="sm" variant="subtle" onClick={() => toggleSortDirection(index)}>
-                                {isDesc ? <FaArrowDown size={14} /> : <FaArrowUp size={14} />}
-                            </ActionIcon>
-                        </Tooltip>
-                        <Tooltip label="Remove">
-                            <ActionIcon size="sm" color="red" variant="subtle" onClick={() => handleRemoveSort(index)}>
-                                <X size={14} />
-                            </ActionIcon>
-                        </Tooltip>
-                    </Group>
+        <Accordion>
+          {/* Citation Metrics Section */}
+          <Accordion.Item value="citation-metrics">
+            <Accordion.Control>Citation Metrics</Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="md">
+                <Group grow>
+                  <NumberInput
+                    label="Min Citations"
+                    value={filters.citationMetrics.minCitations ?? ''}
+                    onChange={(v) => handleNumberChange('minCitations', v)}
+                    min={0}
+                  />
+                  <NumberInput
+                    label="Max Citations"
+                    value={filters.citationMetrics.maxCitations ?? ''}
+                    onChange={(v) => handleNumberChange('maxCitations', v)}
+                    min={0}
+                  />
                 </Group>
-            </Paper>
-        );
-    };
 
-    return (
-        <Modal
-            opened={opened}
-            onClose={onClose}
-            title="Journal Filter"
-            size="xl"
-            padding="md"
-        >
-            <Stack gap="md">
+                <NumberInput
+                  label="Min Field Citation Ratio"
+                  description="Minimum citation impact relative to field average"
+                  value={filters.citationMetrics.minFieldCitationRatio ?? ''}
+                  onChange={(v) => handleNumberChange('minFieldCitationRatio', v)}
+                  min={0}
+                  step={0.1}
+                />
+
+                <NumberInput
+                  label="Min Relative Citation Ratio"
+                  value={filters.citationMetrics.minRelativeCitationRatio ?? ''}
+                  onChange={(v) => handleNumberChange('minRelativeCitationRatio', v)}
+                  min={0}
+                  step={0.1}
+                />
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+
+          {/* Subject Areas Section */}
+          <Accordion.Item value="subject-areas">
+            <Accordion.Control>Subject Areas</Accordion.Control>
+            <Accordion.Panel>
+              <MultiSelect
+                label="Subject Areas (FOR 2020 Categories)"
+                description="Filter by research fields"
+                data={fieldOptions}
+                value={filters.subjectAreas}
+                onChange={(v) => updateFilter('subjectAreas', v)}
+                searchable
+              />
+            </Accordion.Panel>
+          </Accordion.Item>
+
+          {/* Journal Lists Section */}
+          <Accordion.Item value="journal-lists">
+            <Accordion.Control>Journal Lists</Accordion.Control>
+            <Accordion.Panel>
+              <MultiSelect
+                label="Journal Lists"
+                description="Filter by specific journal lists"
+                data={journalListOptions}
+                value={filters.journalLists}
+                onChange={(v) => updateFilter('journalLists', v)}
+                searchable
+              />
+            </Accordion.Panel>
+          </Accordion.Item>
+
+          {/* Publishers & Organizations Section */}
+          <Accordion.Item value="publishers">
+            <Accordion.Control>Publishers & Organizations</Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="md">
+                <MultiSelect
+                  label="Include Publishers"
+                  description="Filter by specific publishing houses"
+                  data={publisherOptions}
+                  value={filters.publisherFilters.publishers}
+                  onChange={(v) => updateFilter('publisherFilters', {
+                    ...filters.publisherFilters,
+                    publishers: v
+                  })}
+                  searchable
+                />
+                
+                <MultiSelect
+                  label="Exclude Publishers"
+                  description="Exclude specific publishing houses"
+                  data={publisherOptions}
+                  value={filters.publisherFilters.excludePublishers}
+                  onChange={(v) => updateFilter('publisherFilters', {
+                    ...filters.publisherFilters,
+                    excludePublishers: v
+                  })}
+                  searchable
+                />
+
+                <MultiSelect
+                  label="Research Organizations"
+                  description="Filter by research institutions"
+                  data={organizationOptions}
+                  value={filters.organizations.research}
+                  onChange={(v) => updateFilter('organizations', {
+                    ...filters.organizations,
+                    research: v
+                  })}
+                  searchable
+                />
+
+                <MultiSelect
+                  label="Funding Organizations"
+                  description="Filter by funding organizations"
+                  data={organizationOptions}
+                  value={filters.organizations.funding}
+                  onChange={(v) => updateFilter('organizations', {
+                    ...filters.organizations,
+                    funding: v
+                  })}
+                  searchable
+                />
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+
+          {/* Access Types Section */}
+          <Accordion.Item value="access">
+            <Accordion.Control>Access Types</Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="xs">
                 <Group>
-                    <Button
-                        variant="light"
-                        leftSection={<Upload size={14} />}
-                        onClick={handleImportClick}
-                    >
-                        Import Filter
-                    </Button>
-                    <Button
-                        variant="light"
-                        leftSection={<Download size={14} />}
-                        onClick={handleExportFilters}
-                    >
-                        Export Filter
-                    </Button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImportFilters}
-                        accept=".json"
-                        style={{ display: 'none' }}
+                  <Checkbox
+                    label="Open Access"
+                    checked={filters.accessType.openAccess}
+                    onChange={(e) => updateFilter('accessType', {
+                      ...filters.accessType,
+                      openAccess: e.currentTarget.checked
+                    })}
+                  />
+                  <Checkbox
+                    label="Subscription"
+                    checked={filters.accessType.subscription}
+                    onChange={(e) => updateFilter('accessType', {
+                      ...filters.accessType,
+                      subscription: e.currentTarget.checked
+                    })}
+                  />
+                </Group>
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+
+          {/* Document Types & Preprints Section */}
+          <Accordion.Item value="document-types">
+            <Accordion.Control>Document Types & Preprints</Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="md">
+                <MultiSelect
+                  label="Include Document Types"
+                  description="Filter for specific document types"
+                  data={documentTypeOptions}
+                  value={filters.documentTypes.include}
+                  onChange={(v) => updateFilter('documentTypes', {
+                    ...filters.documentTypes,
+                    include: v
+                  })}
+                  searchable
+                />
+                
+                <MultiSelect
+                  label="Exclude Document Types"
+                  description="Exclude specific document types"
+                  data={documentTypeOptions}
+                  value={filters.documentTypes.exclude}
+                  onChange={(v) => updateFilter('documentTypes', {
+                    ...filters.documentTypes,
+                    exclude: v
+                  })}
+                  searchable
+                />
+
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>Preprint Settings</Text>
+                  <Group>
+                    <Checkbox
+                      label="Include Preprints"
+                      checked={filters.preprints.include}
+                      onChange={(e) => updateFilter('preprints', {
+                        ...filters.preprints,
+                        include: e.currentTarget.checked,
+                        only: false,
+                        exclude: false
+                      })}
                     />
-                </Group>
+                    <Checkbox
+                      label="Exclude Preprints"
+                      checked={filters.preprints.exclude}
+                      onChange={(e) => updateFilter('preprints', {
+                        ...filters.preprints,
+                        exclude: e.currentTarget.checked,
+                        include: false,
+                        only: false
+                      })}
+                    />
+                    <Checkbox
+                      label="Only Preprints"
+                      checked={filters.preprints.only}
+                      onChange={(e) => updateFilter('preprints', {
+                        ...filters.preprints,
+                        only: e.currentTarget.checked,
+                        include: false,
+                        exclude: false
+                      })}
+                    />
+                  </Group>
+                </Stack>
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
 
-                <Divider />
-
-                <Tabs value={activeTab} onChange={(value) => setActiveTab(value as string)}>
-                    <Tabs.List>
-                        <Tabs.Tab value="general" leftSection={<Filter size={14} />}>
-                            General
-                        </Tabs.Tab>
-                        <Tabs.Tab value="metrics" leftSection={<TrendingUp size={14} />}>
-                            Metrics
-                        </Tabs.Tab>
-                        <Tabs.Tab value="publishers" leftSection={<Building2 size={14} />}>
-                            Publishers
-                        </Tabs.Tab>
-                        <Tabs.Tab value="content" leftSection={<FileText size={14} />}>
-                            Content
-                        </Tabs.Tab>
-                        <Tabs.Tab value="advanced" leftSection={<BookOpen size={14} />}>
-                            Advanced
-                        </Tabs.Tab>
-                    </Tabs.List>
-
-                    <Tabs.Panel value="general" pt="xs">
-                        <Stack gap="md">
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Date Range</Text>
-                                <Group grow>
-                                    <DatePickerInput
-                                        placeholder="From date"
-                                        value={filters.dateRange.from}
-                                        onChange={handleDateChange('from')}
-                                        clearable
-                                        size="sm"
-                                    />
-                                    <DatePickerInput
-                                        placeholder="To date"
-                                        value={filters.dateRange.to}
-                                        onChange={handleDateChange('to')}
-                                        clearable
-                                        size="sm"
-                                    />
-                                </Group>
-                            </Box>
-
-                            <TextInput
-                                label="Text Search"
-                                placeholder="Search titles and abstracts"
-                                value={filters.search_query}
-                                onChange={(event) => setFilters(prev => ({ ...prev, search_query: event.target.value }))}
-                                size="sm"
-                            />
-
-                            <MultiSelect
-                                label="Subject Areas"
-                                data={fieldOptions}
-                                value={filters.subjectAreas}
-                                onChange={(value) => setFilters(prev => ({ ...prev, subjectAreas: value }))}
-                                placeholder="Search and select subject areas"
-                                searchable
-                                clearable
-                                size="sm"
-                            />
-
-                            <Box>
-
-                            </Box>
-                        </Stack>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="metrics" pt="xs">
-                        <Stack gap="md">
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Citation Metrics</Text>
-                                <Stack gap="sm">
-                                    <Group grow>
-                                        <NumberInput
-                                            label="Min Citations"
-                                            value={filters.citationMetrics.minCitations ?? ''}
-                                            onChange={handleCitationMetricsChange('minCitations')}
-                                            min={0}
-                                            max={citationRanges.citations.max}
-                                            size="sm"
-                                        />
-                                        <NumberInput
-                                            label="Max Citations"
-                                            value={filters.citationMetrics.maxCitations ?? ''}
-                                            onChange={handleCitationMetricsChange('maxCitations')}
-                                            min={0}
-                                            max={citationRanges.citations.max}
-                                            size="sm"
-                                        />
-                                    </Group>
-                                    <NumberInput
-                                        label="Min Field Citation Ratio"
-                                        value={filters.citationMetrics.minFieldCitationRatio ?? ''}
-                                        onChange={handleCitationMetricsChange('minFieldCitationRatio')}
-                                        min={0}
-                                        max={citationRanges.fieldCitationRatio.max}
-                                        size="sm"
-                                    />
-                                    <NumberInput
-                                        label="Min Relative Citation Ratio"
-                                        value={filters.citationMetrics.minRelativeCitationRatio ?? ''}
-                                        onChange={handleCitationMetricsChange('minRelativeCitationRatio')}
-                                        min={0}
-                                        max={citationRanges.relativeCitationRatio.max}
-                                        size="sm"
-                                    />
-                                </Stack>
-                            </Box>
-
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Publication Frequency</Text>
-                                <Group grow>
-                                    <NumberInput
-                                        label="Min Articles per Year"
-                                        value={filters.publicationFrequency.minArticlesPerYear ?? ''}
-                                        onChange={handlePublicationFrequencyChange('minArticlesPerYear')}
-                                        min={0}
-                                        size="sm"
-                                    />
-                                    <NumberInput
-                                        label="Max Articles per Year"
-                                        value={filters.publicationFrequency.maxArticlesPerYear ?? ''}
-                                        onChange={handlePublicationFrequencyChange('maxArticlesPerYear')}
-                                        min={0}
-                                        size="sm"
-                                    />
-                                </Group>
-                            </Box>
-
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Sort By</Text>
-                                <Stack gap="xs">
-                                {filters.sort?.map((sort, index) => (
-                                        <SortItem key={index} sort={sort} index={index} />
-                                    ))}
-                                    <Select
-                                        placeholder="Add sort criterion"
-                                        data={sortOptions.filter((option: { value: string; }) =>
-                                            !filters.sort?.some(sort => sort.replace(':desc', '') === option.value)
-                                        )}
-                                        value={null}
-                                        onChange={(value) => value && handleAddSort(value)}
-                                        disabled={filters.sort?.length === sortOptions.length}
-                                        clearable={false}
-                                        size="sm"
-                                    />
-                                </Stack>
-                            </Box>
-                        </Stack>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="publishers" pt="xs">
-                        <Stack gap="md">
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Publisher Selection</Text>
-                                <Stack gap="xs">
-                                    <MultiSelect
-                                        label="Include Publishers"
-                                        placeholder="Select publishers to include"
-                                        data={publisherOptions}
-                                        value={filters.publisherFilters.publishers}
-                                        onChange={handlePublisherChange('publishers')}
-                                        searchable
-                                        clearable
-                                        size="sm"
-                                    />
-                                    <MultiSelect
-                                        label="Exclude Publishers"
-                                        placeholder="Select publishers to exclude"
-                                        data={publisherOptions.filter((pub: { value: string; }) => 
-                                            !filters.publisherFilters.publishers.includes(pub.value)
-                                        )}
-                                        value={filters.publisherFilters.excludePublishers}
-                                        onChange={handlePublisherChange('excludePublishers')}
-                                        searchable
-                                        clearable
-                                        size="sm"
-                                    />
-                                </Stack>
-                            </Box>
-
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Organizations</Text>
-                                <Stack gap="xs">
-                                    <MultiSelect
-                                        label="Research Organizations"
-                                        placeholder="Select research organizations"
-                                        data={organizationOptions}
-                                        value={filters.organizations.research}
-                                        onChange={(value) => setFilters(prev => ({
-                                            ...prev,
-                                            organizations: { ...prev.organizations, research: value }
-                                        }))}
-                                        searchable
-                                        clearable
-                                        size="sm"
-                                    />
-                                    <MultiSelect
-                                        label="Funding Organizations"
-                                        placeholder="Select funding organizations"
-                                        data={organizationOptions}
-                                        value={filters.organizations.funding}
-                                        onChange={(value) => setFilters(prev => ({
-                                            ...prev,
-                                            organizations: { ...prev.organizations, funding: value }
-                                        }))}
-                                        searchable
-                                        clearable
-                                        size="sm"
-                                    />
-                                </Stack>
-                            </Box>
-                        </Stack>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="content" pt="xs">
-                        <Stack gap="md">
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Document Types</Text>
-                                <Stack gap="xs">
-                                    <MultiSelect
-                                        label="Include Document Types"
-                                        placeholder="Select document types to include"
-                                        data={documentTypeOptions}
-                                        value={filters.documentTypes.include}
-                                        onChange={handleDocumentTypeChange('include')}
-                                        searchable
-                                        clearable
-                                        size="sm"
-                                    />
-                                    <MultiSelect
-                                        label="Exclude Document Types"
-                                        placeholder="Select document types to exclude"
-                                        data={documentTypeOptions.filter((type: { value: string; }) => 
-                                            !filters.documentTypes.include.includes(type.value)
-                                        )}
-                                        value={filters.documentTypes.exclude}
-                                        onChange={handleDocumentTypeChange('exclude')}
-                                        searchable
-                                        clearable
-                                        size="sm"
-                                    />
-                                </Stack>
-                            </Box>
-
-                            <Box>
-                                <Text size="sm" fw={500} mb={8}>Preprint Settings</Text>
-                                <Stack gap="xs">
-                                    <Checkbox
-                                        label="Include Preprints"
-                                        checked={filters.preprints.include}
-                                        onChange={(event) => handlePreprintChange('include')(event.currentTarget.checked)}
-                                        size="sm"
-                                    />
-                                    <Checkbox
-                                        label="Exclude Preprints"
-                                        checked={filters.preprints.exclude}
-                                        onChange={(event) => handlePreprintChange('exclude')(event.currentTarget.checked)}
-                                        size="sm"
-                                    />
-                                    <Checkbox
-                                        label="Only Preprints"
-                                        checked={filters.preprints.only}
-                                        onChange={(event) => handlePreprintChange('only')(event.currentTarget.checked)}
-                                        size="sm"
-                                    />
-                                </Stack>
-                            </Box>
-                        </Stack>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="advanced" pt="xs">
-                        <Stack gap="md">
-                            <MultiSelect
-                                label="Journal Lists"
-                                data={journalListOptions}
-                                value={filters.journalLists}
-                                onChange={(value) => setFilters(prev => ({ ...prev, journalLists: value }))}
-                                placeholder="Select journal lists"
-                                searchable
-                                clearable
-                                size="sm"
-                            />
-                        </Stack>
-                    </Tabs.Panel>
-                </Tabs>
-
-                <Group justify="flex-end" mt="md">
-                    <Button variant="subtle" onClick={onClose} disabled={isLoading}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleApply} loading={isLoading}>
-                        {isLoading ? 'Applying...' : 'Apply Filters'}
-                    </Button>
-                </Group>
-            </Stack>
-        </Modal>
-    );
+        {/* Footer Actions */}
+        <Group justify="space-between" mt="xl">
+          <Group>
+            <Button variant="default" leftSection={<Upload size={16} />}
+              onClick={() => fileInputRef.current?.click()}>
+              Load
+            </Button>
+            <Button variant="default" leftSection={<Download size={16} />}
+              onClick={handleExport}>
+              Save
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImport}
+              accept=".json"
+              hidden
+            />
+          </Group>
+          <Group>
+            <Button variant="default" onClick={onClose} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button onClick={() => onApply(filters)} loading={isLoading}>
+              {isLoading ? 'Analyzing...' : 'Apply Filters'}
+            </Button>
+          </Group>
+        </Group>
+      </Stack>
+    </Modal>
+  );
 };
 
 export default JournalFilterModal;
