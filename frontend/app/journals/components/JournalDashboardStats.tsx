@@ -1,7 +1,9 @@
 import { FC } from 'react';
 import { SimpleGrid } from '@mantine/core';
-import { StatsCard } from './StatsCard';
+
 import { AggregatedStats } from '@/libs/types';
+import { IconFileText, IconUsers, IconBuilding, IconLock } from '@tabler/icons-react'; // Import icons
+import QuickMetricCard from '@/components/QuickMetricCard';
 
 interface JournalDashboardStatsProps {
     viewType: string;
@@ -23,34 +25,30 @@ export const JournalDashboardStats: FC<JournalDashboardStatsProps> = ({
     aggregateStats
 }) => {
     return (
-        <SimpleGrid cols={4} spacing="lg">
-            <StatsCard
-                label={`Total ${viewType === 'publishers' ? 'Publishers' : 'Journals'}`}
+        <SimpleGrid cols={{ base: 1, sm: 4 }} spacing="md"> 
+            <QuickMetricCard
+                title={`Total ${viewType === 'publishers' ? 'Publishers' : 'Journals'}`}
                 value={filteredData.length.toLocaleString()}
-                subValue={`${selectedYear === 'all' ? 'All time' : selectedYear}`}
-                color="blue"
-                icon={undefined}
+                subtitle={`${selectedYear === 'all' ? 'All time' : selectedYear}`}
+                icon={<IconFileText size={16} />} 
             />
-            <StatsCard
-                label="Average Citations"
+            <QuickMetricCard
+                title="Average Citations"
                 value={aggregateStats.avgCitations.toFixed(2)}
-                subValue={`Per publication`}
-                color="green"
-                icon={undefined}
+                subtitle={`Per publication`}
+                icon={<IconUsers size={16} />} 
             />
-            <StatsCard
-                label="Open Access"
+            <QuickMetricCard
+                title="Open Access"
                 value={`${aggregateStats.openAccessRatio.toFixed(1)}%`}
-                subValue={`${aggregateStats.openAccess.toLocaleString()} publications`}
-                color="violet"
-                icon={undefined}
+                subtitle={`${aggregateStats.openAccess.toLocaleString()} publications`}
+                icon={<IconLock size={16} />} 
             />
-            <StatsCard
-                label="With Data"
+            <QuickMetricCard
+                title="With Data"
                 value={`${aggregateStats.withDataRatio.toFixed(1)}%`}
-                subValue={`${aggregateStats.withData.toLocaleString()} publications`}
-                color="orange"
-                icon={undefined}
+                subtitle={`${aggregateStats.withData.toLocaleString()} publications`}
+                icon={<IconBuilding size={16} />}
             />
         </SimpleGrid>
     );

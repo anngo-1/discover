@@ -28,6 +28,7 @@
     "embla-carousel-react": "^7.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.456.0",
+    "lz-string": "^1.5.0",
     "mantine-datatable": "^7.12.4",
     "next": "15.0.3",
     "react": "^18.2.0",

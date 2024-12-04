@@ -1,4 +1,4 @@
-import { JournalStats, AggregatedStats, TimeSeriesData } from '@/libs/types';
+import { JournalStats, AggregatedStats, TimeSeriesData, TopMover } from '@/libs/types';
 
 export const aggregateData = (
     inputData: JournalStats[], 
@@ -116,7 +116,9 @@ export const getTimeSeriesData = (
                         name: entityName,
                         publications: yearData.publication_count,
                         citations: yearData.citations / yearData.publication_count,
-                        openAccess: yearData.open_access_count
+                        openAccess: yearData.open_access_count,
+                        withData: yearData.papers_with_data,  
+                        fieldCitationRatio: entity?.avg_field_citation_ratio || 0  
                     });
                 }
             }
@@ -135,3 +137,52 @@ export const formatNumber = (num: number): string => {
 export const calculatePercentage = (value: number, total: number): number => {
     return total > 0 ? (value / total) * 100 : 0;
 };
+
+// utils/data.ts
+export const calculateMover = (
+    entity: AggregatedStats,
+    earliestYear: number,
+    latestYear: number,
+    viewType: string
+  ): TopMover | null => {
+    const earliestData = entity.yearly_data?.[earliestYear.toString()];
+    const latestData = entity.yearly_data?.[latestYear.toString()];
+  
+    if (
+      !earliestData ||
+      !latestData ||
+      earliestData.publication_count === 0 ||
+      earliestData.papers_with_data === 0 ||
+      earliestData.citations === 0
+    ) {
+      return null;
+    }
+  
+  
+    const earliestAvgCitations = earliestData.citations / earliestData.publication_count;
+    const latestAvgCitations = latestData.citations / latestData.publication_count;
+  
+    const publicationChange =
+      ((latestData.publication_count - earliestData.publication_count) /
+        earliestData.publication_count) *
+      100;
+  
+    const dataPapersChange =
+      ((latestData.papers_with_data - earliestData.papers_with_data) /
+        earliestData.papers_with_data) *
+      100;
+  
+    const avgCitationsChange =
+      ((latestAvgCitations - earliestAvgCitations) / earliestAvgCitations) *
+      100;
+  
+    return {
+      name:
+        viewType === 'publishers'
+          ? entity.publisher_name || 'Unknown'
+          : entity.journal_name || 'Unknown',
+      publicationChange,
+      dataPapersChange,
+      avgCitationsChange,
+    };
+  };

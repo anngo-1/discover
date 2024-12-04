@@ -20,140 +20,28 @@ export type FilterGroup<T> = {
 };
 
 export type WorksFilterState = {
-  [x: string]: any;
-
   dateRange: {
-    from: Date | null;
-    to: Date | null;
+      from: Date | null;
+      to: Date | null;
   };
   search_query: string;
   type: string[];
+  excludeTypes: string[];
   fields: string[];
   excludeFields: string[];
   citationCount: {
-    min: number;
-    max: number | null;
+      min: number;
+      max: number | null;
   };
   openAccess: boolean;
   has_doi: boolean;
   sort: string[];
-  subject: string;
-
-
-  researchCategories?: {
-    operator?: LogicOperator;
-    bra?: FilterGroup<string>;
-    hra?: FilterGroup<string>;
-    hrcs?: {
-      operator: LogicOperator;
-      hc?: FilterGroup<string>;
-      rac?: FilterGroup<string>;
-    };
-    icrp?: {
-      operator: LogicOperator;
-      cso?: FilterGroup<string>;
-      ct?: FilterGroup<string>;
-    };
-    rcdc?: FilterGroup<string>;
-    sdg?: FilterGroup<string>;
-    uoa?: FilterGroup<string>;
-  };
-
- 
-  authors: {
-    name: string;
-    strict: boolean;
-    operator?: LogicOperator;
-    affiliationLogic?: LogicOperator;
-  }[];
-
-  
-  metrics: {
-    fieldCitationRatio: {
-      min: number | null;
-      max: number | null;
-    };
-    relativeCitationRatio: {
-      min: number | null;
-      max: number | null;
-    };
-    altmetricScore?: {
-      min: number | null;
-      max: number | null;
-    };
-    recentCitations?: {
-      min: number | null;
-      max: number | null;
-    };
-  };
-
-  
+  author: string;  
   organizations: {
-    research: string[];
-    funding: string[];
-    operator?: LogicOperator;
-  };
-
-  countries: {
-    research: string[];
-    funding: string[];
-    operator?: LogicOperator;
-    cities?: string[];
-    states?: string[];
-  };
-
-
-  publicationIds: {
-    doi?: string;
-    pmid?: string;
-    pmcid?: string;
-    arxivId?: string;
-    isbn?: string;
-    eisbn?: string;
-  };
-
-  hasFullText: boolean;
-  documentType: {
-    classification?: string;
-    isCitable?: boolean;
-  };
-  journalLists?: string[];
-
-  concepts?: {
-    terms: string[];
-    minRelevance: number;
-    operator: LogicOperator;
-    matchType: 'exact' | 'partial' | 'semantic';
-  };
-
-  contentFilters?: {
-    hasAcknowledgements?: boolean;
-    hasAbstract?: boolean;
-    hasFundingSection?: boolean;
-    hasPatentIds?: boolean;
-    hasClinicalTrialIds?: boolean;
-    meshTerms?: FilterGroup<string>;
-    meshHeadings?: FilterGroup<string>;
-    publicationType?: FilterGroup<string>;
-  };
-
-  sourceFilters?: {
-    journalIds?: string[];
-    publisherIds?: string[];
-    issn?: string[];
-    eissn?: string[];
-    volume?: string;
-    issue?: string;
-    operator?: LogicOperator;
-  };
-
-
-  pubmedFilters?: {
-    meshTerms?: FilterGroup<string>;
-    meshHeadings?: FilterGroup<string>;
-    publicationTypes?: FilterGroup<string>;
-    keywords?: FilterGroup<string>;
-    operator?: LogicOperator;
+      research: string[];
+      funding?: string[];
+      excludeResearch?: string[];
+      excludeFunding?: string[];
   };
 };
 
@@ -334,55 +222,85 @@ export interface TimeSeriesData {
   publications: number;
   citations: number;
   openAccess: number;
+  withData: number;
+  fieldCitationRatio: number;
+  [key: string]: string | number; 
 }
-
 export interface TopNFilter {
   value: 'publication_count' | 'avg_citations' | 'papers_with_data' | 'open_access_count' | 'avg_field_citation_ratio';
   label: string;
 }
 
-export interface JournalFilterState {
+export type JournalFilterState = {
+  dateRange: {
+      from: Date | null;
+      to: Date | null;
+  };
+  search_query: string;
+  type: string[];
+  excludeTypes: string[];
+  fields: string[];
+  excludeFields: string[];
+  citationCount: {
+      min: number;
+      max: number | null;
+  };
+  openAccess: boolean;
+  has_doi: boolean;
+  sort: string[];
+  author: string;  
+  organizations: {
+      research: string[];
+      funding?: string[];
+      excludeResearch?: string[];
+      excludeFunding?: string[];
+  };
+};
+
+export interface YearData {
+  year: number;
+  publication_count: number;
+  papers_with_data: number;
+  avg_citations: number;
+}
+
+export interface JournalData {
+  publisher_name?: string;
+  journal_name?: string;
+  years: number[];
+  yearsData: YearData[];
+}
+
+export interface TopMover {
+  name: string;
+  publicationChange: number;
+  dataPapersChange: number;
+  avgCitationsChange: number;
+}
+
+export interface FilterState {
   dateRange: {
     from: Date | null;
     to: Date | null;
   };
-  journalLists: string[];
   search_query: string;
-  citationMetrics: {
-    minImpactFactor: number | null;
-    minCiteScore: number | null;
-    minHIndex: number | null;
-    minCitations: number | null;
-    maxCitations: number | null;
-    minFieldCitationRatio: number | null;
-    minRelativeCitationRatio: number | null;
+  type: string[];
+  excludeTypes: string[];
+  fields: string[];
+  excludeFields: string[];
+  citationCount: {
+    min: number;
+    max: number | null;
   };
-  publisherFilters: {
-    publishers: string[];
-    excludePublishers: string[];
-  };
-  accessType: {
-    openAccess: boolean;
-    subscription: boolean;
-    hybrid: boolean;
-  };
-  subjectAreas: string[];
-  publicationFrequency: {
-    minArticlesPerYear: number | null;
-    maxArticlesPerYear: number | null;
-  };
+  openAccess: boolean;
+  has_doi: boolean;
   sort: string[];
+  author: string;
   organizations: {
     research: string[];
-    funding: string[];
+    funding?: string[];
+    excludeResearch?: string[];
+    excludeFunding?: string[];
   };
-  documentTypes: {
-    include: string[];
-    exclude: string[];
-  };
-  preprints: {
-    include: boolean;
-    exclude: boolean;
-    only: boolean;
-  };
+  [key: string]: any;
 }

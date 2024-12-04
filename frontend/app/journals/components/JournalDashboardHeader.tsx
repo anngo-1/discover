@@ -22,7 +22,6 @@ export const JournalDashboardHeader: FC<JournalDashboardHeaderProps> = ({
             <Paper p="xs">
                 <Group gap="md" align="flex-end">
                     <Select
-                        label="Year"
                         value={selectedYear}
                         onChange={setSelectedYear}
                         data={yearOptions}
