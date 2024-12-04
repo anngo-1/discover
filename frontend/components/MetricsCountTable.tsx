@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Tabs, Paper, Text, Group, Loader, Center, Stack, ScrollArea, TextInput, Box } from '@mantine/core';
+import { Paper, Text, Group, Loader, Center, Stack, ScrollArea, TextInput, Box, Menu, UnstyledButton, Flex, Divider } from '@mantine/core';
 import { debounce } from 'lodash';
+import { ChevronDown, Search } from 'lucide-react';
 
 export type MetricData = Record<string, number>;
 
@@ -22,16 +23,35 @@ export const MetricsCountTable = ({
   isLoading = false,
   defaultActiveTab,
 }: MetricsCountTableProps) => {
-  const [activeTab, setActiveTab] = useState<string | null>(defaultActiveTab || categories[0]?.id || null);
+  const initialTab = defaultActiveTab || (categories.length > 0 ? categories[0].id : null);
+  const [activeTab, setActiveTab] = useState<string | null>(initialTab);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  console.log(categories)
-  // Debounced search handler
-  const debouncedSearch = useMemo(() => debounce((term: string) => setSearchTerm(term), 300), []);
-
-  // Clean up debounce on unmount
+  const [tabSearchTerm, setTabSearchTerm] = useState('');
+  
+  // Set initial active tab when categories change and there isn't one selected
   useEffect(() => {
-    return () => debouncedSearch.cancel();
-  }, [debouncedSearch]);
+    if (!activeTab && categories.length > 0) {
+      setActiveTab(categories[0].id);
+    }
+  }, [categories, activeTab]);
+
+  const debouncedSearch = useMemo(() => debounce((term: string) => setSearchTerm(term), 300), []);
+  const debouncedTabSearch = useMemo(() => debounce((term: string) => setTabSearchTerm(term), 300), []);
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+      debouncedTabSearch.cancel();
+    };
+  }, [debouncedSearch, debouncedTabSearch]);
+
+  const filteredCategories = useMemo(() => 
+    categories.filter(cat => 
+      cat.label.toLowerCase().includes(tabSearchTerm.toLowerCase())
+    )
+  , [categories, tabSearchTerm]);
+
+  const activeCategory = categories.find(cat => cat.id === activeTab);
 
   const getFilteredMetrics = (metrics: MetricData): MetricData => {
     return Object.entries(metrics)
@@ -51,33 +71,60 @@ export const MetricsCountTable = ({
     );
   }
 
+  // Show empty state if no categories are available
+  if (categories.length === 0) {
+    return (
+      <Paper shadow="sm" radius="md" withBorder h={500}>
+        <Center h={500}>
+          <Stack gap="xs" align="center">
+            <Text size="lg" fw={500} c="dimmed">No categories available</Text>
+            <Text size="sm" c="dimmed">Please add some categories to get started</Text>
+          </Stack>
+        </Center>
+      </Paper>
+    );
+  }
+
   const renderMetricsList = (metrics: MetricData) => {
     const total = getTotalValue(metrics);
     const filteredMetrics = getFilteredMetrics(metrics);
     
+    if (Object.keys(filteredMetrics).length === 0) {
+      return (
+        <Center h={350}>
+          <Stack gap="xs" align="center">
+            <Text size="lg" fw={500} c="dimmed">No results found</Text>
+            <Text size="sm" c="dimmed">Try adjusting your search terms</Text>
+          </Stack>
+        </Center>
+      );
+    }
+    
     return (
-      <ScrollArea h={350} scrollbarSize={8}>
-        <Stack gap="xs">
-          {Object.entries(filteredMetrics).map(([name, value]) => (
+      <ScrollArea h={400} scrollbarSize={8}>
+        <Stack gap={2}>
+          {Object.entries(filteredMetrics).map(([name, value], index) => (
             <Paper 
               key={name} 
-              p="sm" 
+              p="xs"
               withBorder 
-              radius="sm"
-              bg="gray.0"
+              radius="md"
+              bg={index % 2 === 0 ? 'gray.0' : 'white'}
             >
-              <Group justify="space-between" wrap="nowrap">
-                <Text fw={500} lineClamp={1} style={{ flex: 1 }}>
-                  {name}
+              <Group justify="space-between" wrap="nowrap" gap="xs">
+                <Box style={{ flex: 1 }}>
+                  <Group gap={6} align="center">
+                    <Text fw={500} lineClamp={1} size="sm">
+                      {name}
+                    </Text>
+                    <Text size="xs" c="dimmed" span>
+                      ({((value / total) * 100).toFixed(1)}%)
+                    </Text>
+                  </Group>
+                </Box>
+                <Text fw={600} c="blue.7" style={{ whiteSpace: 'nowrap' }} size="sm">
+                  {value.toLocaleString()}
                 </Text>
-                <Group gap="sm" wrap="nowrap" ml="md">
-                  <Text fw={600} c="blue.7" style={{ whiteSpace: 'nowrap' }}>
-                    {value.toLocaleString()}
-                  </Text>
-                  <Text size="sm" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
-                    {((value / total) * 100).toFixed(1)}%
-                  </Text>
-                </Group>
               </Group>
             </Paper>
           ))}
@@ -97,36 +144,74 @@ export const MetricsCountTable = ({
       })}
     >
       <Paper shadow="sm" radius="md" withBorder h={500}>
-        <Tabs value={activeTab} onChange={setActiveTab} variant="default" h="100%" >
-          <Tabs.List grow style={{ borderBottom: '1px solid #eee' }}>
-            {categories.map((category) => (
-              <Tabs.Tab 
-                key={category.id} 
-                value={category.id}
-                rightSection={
-                  <Text size="xs" c="dimmed">
-                    {Object.keys(category.data).length}
-                  </Text>
-                }
-              >
-                {category.label}
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
+        <Flex direction="column" h="100%">
+          <Box p="xs">
+            <Group gap="xs" align="center">
+              <Menu shadow="md" width={300} position="bottom-start">
+                <Menu.Target>
+                  <UnstyledButton>
+                    <Paper withBorder p="xs" pr="sm" radius="md">
+                      <Group gap="xs">
+                        <Text fw={500} size="sm">{activeCategory?.label || 'Select Category'}</Text>
+                        <Text size="xs" c="dimmed" span>
+                          ({Object.keys(activeCategory?.data || {}).length})
+                        </Text>
+                        <ChevronDown size={14} />
+                      </Group>
+                    </Paper>
+                  </UnstyledButton>
+                </Menu.Target>
 
-          {categories.map((category) => (
-            <Tabs.Panel key={category.id} value={category.id} p="md">
-              {category.searchable && (
+                <Menu.Dropdown>
+                  <Box p="xs">
+                    <TextInput
+                      placeholder="Find a category..."
+                      leftSection={<Search size={14} />}
+                      onChange={(e) => debouncedTabSearch(e.target.value)}
+                      size="xs"
+                    />
+                  </Box>
+                  <Divider my={4} />
+                  <ScrollArea.Autosize mah={400} scrollbarSize={8}>
+                    <Box pr="sm">
+                      {filteredCategories.map((category) => (
+                        <Menu.Item
+                          key={category.id}
+                          onClick={() => setActiveTab(category.id)}
+                          bg={category.id === activeTab ? 'blue.0' : undefined}
+                          p="xs"
+                        >
+                          <Group justify="space-between" gap="xs">
+                            <Text size="sm">{category.label}</Text>
+                            <Text size="xs" c="dimmed">
+                              {Object.keys(category.data).length}
+                            </Text>
+                          </Group>
+                        </Menu.Item>
+                      ))}
+                    </Box>
+                  </ScrollArea.Autosize>
+                </Menu.Dropdown>
+              </Menu>
+
+              {activeCategory?.searchable && (
                 <TextInput
-                  placeholder={`Search ${category.label.toLowerCase()}`}
+                  placeholder={`Search in ${activeCategory.label.toLowerCase()}...`}
+                  leftSection={<Search size={14} />}
                   onChange={(e) => debouncedSearch(e.target.value)}
-                  mb="md"
+                  style={{ flex: 1 }}
+                  size="xs"
                 />
               )}
-              {renderMetricsList(category.data)}
-            </Tabs.Panel>
-          ))}
-        </Tabs>
+            </Group>
+          </Box>
+
+          <Divider />
+
+          <Box style={{ flex: 1 }} p="xs">
+            {activeCategory && renderMetricsList(activeCategory.data)}
+          </Box>
+        </Flex>
       </Paper>
     </Box>
   );

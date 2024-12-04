@@ -1,181 +1,113 @@
-import { JournalFilterState } from '@/libs/types';
+import { JournalFilterState } from "@/libs/types";
 
-const defaultJournalFilters: JournalFilterState = {
+export const initialFilters: JournalFilterState = {
     dateRange: {
-        from: new Date(0),
-        to: new Date()
+        from: new Date('2023-01-01'),
+        to: new Date('2024-12-31')
     },
-    journalLists: [],
-    search_query: '',
-    citationMetrics: {
-        minImpactFactor: null,
-        minCiteScore: null,
-        minHIndex: null,
-        minCitations: null,
-        maxCitations: null,
-        minFieldCitationRatio: null,
-        minRelativeCitationRatio: null
+    search_query: "",
+    type: ['RESEARCH_ARTICLE'],
+    excludeTypes: [],
+    fields: [],
+    excludeFields: [],
+    openAccess: false,
+    has_doi: false,
+    citationCount: {
+        min: 0,
+        max: null
     },
-    publisherFilters: {
-        publishers: [],
-        excludePublishers: []
-    },
-    accessType: {
-        openAccess: false,
-        subscription: false,
-        hybrid: false
-    },
-    subjectAreas: [],
-    publicationFrequency: {
-        minArticlesPerYear: null,
-        maxArticlesPerYear: null
-    },
-    sort: ['citations_count:desc'],
+    sort: ['citations_count:desc', 'date_normal:desc'],
+    author: '',
     organizations: {
-        research: ['grid.266100.3'], 
-        funding: []
-    },
-    documentTypes: {
-        include: [],
-        exclude: []
-    },
-    preprints: {
-        include: true,
-        exclude: false,
-        only: false
+        research: ['grid.266100.3'], // UCSD
+        funding: [],
+        excludeResearch: [],
+        excludeFunding: []
     }
 };
 
 export const journalPredefinedFilters = [
     {
-        name: "All Time",
-        filters: defaultJournalFilters
+        name: 'Default Filter',
+        filters:initialFilters
     },
     {
-        name: "High Impact",
+        name: 'High Impact Journals/Publishers',
         filters: {
-            ...defaultJournalFilters,
-            citationMetrics: {
-                minImpactFactor: 5,
-                minCiteScore: 5,
-                minHIndex: 50,
-                minCitations: 100,
-                maxCitations: null,
-                minFieldCitationRatio: 2.0,
-                minRelativeCitationRatio: 2.0
-            },
-            journalLists: ['SCI', 'SCIE'],
-            documentTypes: {
-                include: ['RESEARCH_ARTICLE', 'REVIEW_ARTICLE'],
-                exclude: []
-            },
-            preprints: {
-                include: false,
-                exclude: true,
-                only: false
-            },
-            sort: ['metrics.field_citation_ratio:desc', 'citations_count:desc']
+            ...initialFilters,
+            type: ['RESEARCH_ARTICLE', 'REVIEW_ARTICLE'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') },
+            citationCount: { min: 20, max: null },
+            has_doi: true,
+            sort: ['citations_count:desc']
         }
     },
     {
-        name: "Open Access Only",
+        name: 'Computer Science Journals/Publishers',
         filters: {
-            ...defaultJournalFilters,
-            accessType: {
-                openAccess: true,
-                subscription: false,
-                hybrid: false
-            },
-            journalLists: ['DOAJ'],
-            publisherFilters: {
-                publishers: [],
-                excludePublishers: ['Research Square Platform', 'Cold Spring Harbor Laboratory'] // Excluding preprint servers
-            },
-            preprints: {
-                include: false,
-                exclude: true,
-                only: false
+            ...initialFilters,
+            type: ['RESEARCH_ARTICLE', 'CONFERENCE_PAPER'],
+            fields: ['Information and Computing Sciences'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') }
+        }
+    },
+    {
+        name: 'Medical Research Journals/Publishers',
+        filters: {
+            ...initialFilters,
+            fields: ['Health Sciences', 'Clinical Sciences'],
+            type: ['RESEARCH_ARTICLE', 'CLINICAL_TRIAL'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') }
+        }
+    },
+    {
+        name: 'Biology Research Journals/Publishers',
+        filters: {
+            ...initialFilters,
+            fields: ['Biological Sciences'],
+            type: ['RESEARCH_ARTICLE', 'REVIEW_ARTICLE'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') }
+        }
+    },
+    {
+        name: 'Physics & Engineering Journals/Publishers',
+        filters: {
+            ...initialFilters,
+            fields: ['Physical Sciences', 'Engineering'],
+            type: ['RESEARCH_ARTICLE', 'CONFERENCE_PAPER'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') }
+        }
+    },
+
+
+    {
+        name: 'NIH Funded Research Journals/Publishers',
+        filters: {
+            ...initialFilters,
+            type: ['RESEARCH_ARTICLE'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') },
+            organizations: {
+                ...initialFilters.organizations,
+                funding: ['grid.94365.3d'] // NIH GRID ID
             }
         }
     },
     {
-        name: "Last 5 Years",
+        name: 'Climate & Environmental Research Journals/Publishers',
         filters: {
-            ...defaultJournalFilters,
-            dateRange: {
-                from: new Date(new Date().setFullYear(new Date().getFullYear() - 5)),
-                to: new Date()
-            }
+            ...initialFilters,
+            fields: ['Environmental Sciences', 'Earth Sciences'],
+            search_query: "climate OR environmental OR sustainability",
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') }
         }
     },
     {
-        name: "Core Research Journals",
+        name: 'Social Sciences Research Journals/Publishers',
         filters: {
-            ...defaultJournalFilters,
-            documentTypes: {
-                include: ['RESEARCH_ARTICLE', 'REVIEW_ARTICLE'],
-                exclude: ['EDITORIAL', 'LETTER_TO_EDITOR', 'CONFERENCE_ABSTRACT', 'BOOK_REVIEW']
-            },
-            preprints: {
-                include: false,
-                exclude: true,
-                only: false
-            },
-            publisherFilters: {
-                publishers: ['Elsevier', 'Springer Nature', 'Wiley', 'Oxford University Press (OUP)', 'Taylor & Francis'],
-                excludePublishers: []
-            },
-            journalLists: ['SCI', 'SCIE', 'SSCI'],
-            citationMetrics: {
-                minImpactFactor: 1,
-                minCiteScore: 1,
-                minHIndex: 20,
-                minCitations: null,
-                maxCitations: null,
-                minFieldCitationRatio: 0.8,
-                minRelativeCitationRatio: 0.8
-            }
-        }
-    },
-    {
-        name: "Emerging Research",
-        filters: {
-            ...defaultJournalFilters,
-            dateRange: {
-                from: new Date(new Date().setFullYear(new Date().getFullYear() - 2)),
-                to: new Date()
-            },
-            journalLists: ['ESCI'],
-            citationMetrics: {
-                minImpactFactor: null,
-                minCiteScore: null,
-                minHIndex: null,
-                minCitations: 1,
-                maxCitations: null,
-                minFieldCitationRatio: 0.5,
-                minRelativeCitationRatio: 0.5
-            },
-            documentTypes: {
-                include: ['RESEARCH_ARTICLE'],
-                exclude: []
-            },
-            sort: ['date_normal:desc', 'citations_count:desc']
-        }
-    },
-    {
-        name: "Preprints Only",
-        filters: {
-            ...defaultJournalFilters,
-            preprints: {
-                include: true,
-                exclude: false,
-                only: true
-            },
-            publisherFilters: {
-                publishers: ['Cold Spring Harbor Laboratory', 'Research Square Platform'],
-                excludePublishers: []
-            },
-            sort: ['date_normal:desc']
+            ...initialFilters,
+            fields: ['Social and Behavioural Sciences', 'Psychology'],
+            type: ['RESEARCH_ARTICLE'],
+            dateRange: { from: new Date('2023-01-01'), to: new Date('2024-12-31') }
         }
     }
 ];

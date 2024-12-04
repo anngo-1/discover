@@ -1,16 +1,16 @@
 import { FC, useMemo } from 'react';
-import { Container, Stack, Center, Loader, Text, Button } from '@mantine/core';
+import { Container, Stack, Grid, Loader, Text, Button, Center } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { JournalDashboardHeader } from './JournalDashboardHeader';
 import { JournalDashboardStats } from './JournalDashboardStats';
 import { JournalDashboardResults } from './JournalDashboardResults';
-import { DistributionChart } from './charts/DistributionChart';
+import DistributionChart from './charts/DistributionChart';
 import { TimeSeriesChart } from './charts/TimeSeriesChart';
 import { useJournalData } from '../hooks/getJournalsData';
 import { COLORS } from '../utils/constants';
 import { getTimeSeriesData } from '../utils/data';
 import { AggregatedStats, JournalFilterState } from '@/libs/types';
-
+import TopMoversTable from './TopMoversTable';
 
 interface JournalStatsProps {
     filters: JournalFilterState;
@@ -42,7 +42,6 @@ const JournalDashboard: FC<JournalStatsProps> = ({ filters }) => {
             timeSeriesTopNValue,
             setTimeSeriesTopNValue,
             timeSeriesTopNFilter,
-            setTimeSeriesTopNFilter,
             handleSort,
             handlePageChange,
             setSelectedItem,
@@ -58,12 +57,13 @@ const JournalDashboard: FC<JournalStatsProps> = ({ filters }) => {
         }
     } = useJournalData(filters);
 
+
     const distributionData = useMemo(() => {
         return [...filteredData]
             .sort((a, b) => {
                 const aValue = a[distributionTopNFilter as keyof AggregatedStats];
                 const bValue = b[distributionTopNFilter as keyof AggregatedStats];
-            
+
                 if (typeof aValue === 'number' && typeof bValue === 'number') {
                     return bValue - aValue;
                 }
@@ -80,7 +80,7 @@ const JournalDashboard: FC<JournalStatsProps> = ({ filters }) => {
             }));
     }, [filteredData, viewType, distributionTopNValue, distributionTopNFilter]);
 
-    const timeSeriesData = selectedYear === 'all' 
+    const timeSeriesData = selectedYear === 'all'
         ? getTimeSeriesData(filteredData, timeSeriesTopNValue, viewType, timeSeriesTopNFilter)
         : [];
 
@@ -109,6 +109,8 @@ const JournalDashboard: FC<JournalStatsProps> = ({ filters }) => {
         link.click();
         document.body.removeChild(link);
     };
+
+
 
     if (loading) {
         return (
@@ -153,30 +155,35 @@ const JournalDashboard: FC<JournalStatsProps> = ({ filters }) => {
                     aggregateStats={aggregateStats}
                 />
 
-                <DistributionChart
-                    data={distributionData}
-                    chartType={chartType}
-                    setChartType={setChartType}
-                    topNValue={distributionTopNValue}
-                    setTopNValue={setDistributionTopNValue}
-                    topNFilter={distributionTopNFilter}
-                    setTopNFilter={setDistributionTopNFilter}
-                    viewType={viewType}
-                    COLORS={COLORS}
-                />
+                <Grid>
+                    <Grid.Col span={7}>
+                        <DistributionChart
+                            data={distributionData}
+                            chartType={chartType}
+                            setChartType={setChartType}
+                            topNValue={distributionTopNValue}
+                            setTopNValue={setDistributionTopNValue}
+                            topNFilter={distributionTopNFilter}
+                            setTopNFilter={setDistributionTopNFilter}
+                            viewType={viewType}
+                            COLORS={COLORS}
+                        />
+                    </Grid.Col>
+                    <Grid.Col span={5}>
+                        <TopMoversTable filteredData={filteredData} viewType={viewType} />
+                    </Grid.Col>
+                </Grid>
 
                 {selectedYear === 'all' && (
                     <TimeSeriesChart
-                        data={timeSeriesData}
-                        topNValue={timeSeriesTopNValue}
-                        setTopNValue={setTimeSeriesTopNValue}
-                        topNFilter={timeSeriesTopNFilter}
-                        setTopNFilter={setTimeSeriesTopNFilter}
-                        timeSeriesMetric={timeSeriesMetric}
-                        setTimeSeriesMetric={setTimeSeriesMetric}
-                        viewType={viewType}
-                        COLORS={COLORS}
-                    />
+                    data={timeSeriesData}
+                    topNValue={timeSeriesTopNValue}
+                    setTopNValue={setTimeSeriesTopNValue}
+                    timeSeriesMetric={timeSeriesMetric}
+                    setTimeSeriesMetric={setTimeSeriesMetric}
+                    viewType={viewType}
+                    COLORS={COLORS}
+                />
                 )}
 
                 <JournalDashboardResults

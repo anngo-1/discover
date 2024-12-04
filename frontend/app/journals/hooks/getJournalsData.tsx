@@ -3,6 +3,8 @@ import { aggregateData } from '../utils/data';
 import { JournalStats, AggregatedStats, JournalFilterState } from '@/libs/types';
 
 type SortableFields = 'publication_count' | 'avg_citations' | 'papers_with_data' | 'open_access_count' | 'avg_field_citation_ratio';
+type ChartType = 'bar' | 'pie';
+type MetricKey = 'publications' | 'citations' | 'withData' | 'openAccess' | 'fieldCitationRatio';
 
 export const useJournalData = (filters: JournalFilterState) => {
     const [data, setData] = useState<JournalStats[]>([]);
@@ -17,14 +19,13 @@ export const useJournalData = (filters: JournalFilterState) => {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedItem, setSelectedItem] = useState<AggregatedStats | null>(null);
    
-    const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
-    const [timeSeriesMetric, setTimeSeriesMetric] = useState<'publications' | 'citations' | 'openAccess'>('publications');
+    const [chartType, setChartType] = useState<ChartType>('bar');
+    const [timeSeriesMetric, setTimeSeriesMetric] = useState<MetricKey>('publications');
     
     const [distributionTopNValue, setDistributionTopNValue] = useState(10);
-    const [distributionTopNFilter, setDistributionTopNFilter] = useState<string>('publication_count');
+    const [distributionTopNFilter, setDistributionTopNFilter] = useState<string>('publications');
     const [timeSeriesTopNValue, setTimeSeriesTopNValue] = useState(10);
-    const [timeSeriesTopNFilter, setTimeSeriesTopNFilter] = useState<string>('publication_count');
-
+    const [timeSeriesTopNFilter, setTimeSeriesTopNFilter] = useState<string>('publications');
     const host = process.env.NEXT_PUBLIC_HOST;
     console.log(selectedItem)
     useEffect(() => {

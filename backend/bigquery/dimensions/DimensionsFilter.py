@@ -39,6 +39,14 @@ class DimensionsFilter:
             doc_types = [f"'{t}'" for t in filters['type']]
             conditions.append(f"document_type.classification IN ({','.join(doc_types)})")
 
+        if filters.get('type') and len(filters['type']) > 0:
+            doc_types = [f"'{t}'" for t in filters['type']]
+            conditions.append(f"document_type.classification IN ({','.join(doc_types)})")
+
+        if filters.get('excludeTypes') and len(filters['excludeTypes']) > 0:
+            exclude_types = [f"'{t}'" for t in filters['excludeTypes']]
+            conditions.append(f"document_type.classification NOT IN ({','.join(exclude_types)})")
+            
         if filters.get('fields') and len(filters['fields']) > 0:
             field_conditions = []
             for field in filters['fields']:
@@ -65,22 +73,36 @@ class DimensionsFilter:
                 """)
 
         if filters.get('organizations'):
+            # Handle research organizations
             if filters['organizations'].get('research') and len(filters['organizations']['research']) > 0:
                 research_orgs = [f"'{org}'" for org in filters['organizations']['research']]
                 conditions.append(f"""
                     EXISTS (
                         SELECT 1 
-                        FROM UNNEST(research_orgs) org_array
-                        WHERE org_array IN ({','.join(research_orgs)})
+                        FROM UNNEST(research_orgs) org
+                        WHERE org IN ({','.join(research_orgs)})
                     )
                 """)
+            
+            # Add handling for excludeResearch
+            if filters['organizations'].get('excludeResearch') and len(filters['organizations']['excludeResearch']) > 0:
+                exclude_research_orgs = [f"'{org}'" for org in filters['organizations']['excludeResearch']]
+                conditions.append(f"""
+                    NOT EXISTS (
+                        SELECT 1 
+                        FROM UNNEST(research_orgs) org
+                        WHERE org IN ({','.join(exclude_research_orgs)})
+                    )
+                """)
+
+            # Handle funding organizations
             if filters['organizations'].get('funding') and len(filters['organizations']['funding']) > 0:
                 funding_orgs = [f"'{org}'" for org in filters['organizations']['funding']]
                 conditions.append(f"""
                     EXISTS (
                         SELECT 1 
-                        FROM UNNEST(funder_orgs) org_array
-                        WHERE org_array IN ({','.join(funding_orgs)})
+                        FROM UNNEST(funder_orgs) org
+                        WHERE org IN ({','.join(funding_orgs)})
                     )
                 """)
 
