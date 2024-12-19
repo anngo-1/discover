@@ -17,7 +17,7 @@ const navigationItems = [
   { label: 'Journals/Publishers', href: '/journals', icon: <BookOpen size={20} /> },
   { label: 'Researchers', href: '/researchers', icon: <Users size={20} /> },
   { label: 'Topics', href: '/topics', icon: <Tags size={20} /> },
-  { label: 'Funding', href: '/funding', icon: <Coins size={20} /> },
+  { label: 'Funding', href: '/funding', icon: <Coins size={20} /> }
 ];
 
 interface NavbarProps {

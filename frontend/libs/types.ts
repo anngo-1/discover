@@ -119,6 +119,15 @@ interface YearlyData {
   total_publications: number;
   unclassified_count: number;
 }
+export interface TopicDataPoint {
+  concept: string;
+  publication_count: number;
+  avg_citations: number;
+  collaborating_countries: string;
+  top_journals: string;
+  year?: string | number;
+}
+
 
 interface DimensionsStats {
   data: {
@@ -304,3 +313,4 @@ export interface FilterState {
   };
   [key: string]: any;
 }
+
