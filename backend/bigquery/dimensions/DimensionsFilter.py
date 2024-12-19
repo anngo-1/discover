@@ -1,6 +1,5 @@
 from typing import Dict, Any
 import pandas as pd
-from datetime import datetime
 
 class DimensionsFilter:
     def __init__(self, bq_client):

@@ -1,10 +1,9 @@
 from typing import Dict, Any
 import pandas as pd
 from ..DimensionsFilter import DimensionsFilter
-
 class TopicAnalytics(DimensionsFilter):
     def analyze(self, dataset_name: str, filters: Dict[str, Any]) -> pd.DataFrame:
-        """Analyze research topics and themes"""
+        """Analyze research topics and themes, with aggregated data for all years"""
         query = f"""
         WITH base_metrics AS (
             SELECT 
@@ -38,10 +37,32 @@ class TopicAnalytics(DimensionsFilter):
         ),
         topic_trends AS (
             SELECT 
-                *,
+                year,  -- Keep year as an integer
+                concept,
+                publication_count,
+                avg_citations,
+                field_impact,
+                research_fields,
+                collaborating_countries,
+                top_journals,
                 LAG(publication_count) OVER(PARTITION BY concept ORDER BY year) as prev_count,
                 LAG(publication_count, 2) OVER(PARTITION BY concept ORDER BY year) as prev_prev_count
             FROM topic_summary
+        ),
+        aggregated_topics AS (
+            SELECT 
+                9999 as year,  -- Use integer 9999 for aggregated data
+                concept,
+                SUM(publication_count) as publication_count,
+                AVG(avg_citations) as avg_citations,
+                AVG(field_impact) as field_impact,
+                MAX(research_fields) as research_fields,
+                MAX(collaborating_countries) as collaborating_countries,
+                STRING_AGG(DISTINCT top_journals ORDER BY top_journals LIMIT 5) as top_journals,
+                NULL as yoy_growth,
+                NULL as two_year_growth
+            FROM topic_trends
+            GROUP BY concept
         )
         SELECT 
             year,
@@ -62,6 +83,19 @@ class TopicAnalytics(DimensionsFilter):
                 ELSE 0
             END as two_year_growth
         FROM topic_trends
+        UNION ALL
+        SELECT 
+            year,
+            concept,
+            publication_count,
+            avg_citations,
+            field_impact,
+            research_fields,
+            collaborating_countries,
+            top_journals,
+            yoy_growth,
+            two_year_growth
+        FROM aggregated_topics
         ORDER BY year DESC, publication_count DESC
         LIMIT 1000
         """
