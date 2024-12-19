@@ -1,7 +1,5 @@
 import datetime
 from flask import Flask, jsonify, request
-from flask_cors import CORS
-import requests
 from utils import INSTITUTION_ID, OPENALEX_API_URL
 from utils.works_filter import generate_filter_strings
 from datetime import datetime, timedelta
@@ -27,7 +25,6 @@ analytics = DimensionsAnalytics(bq)
 @work_data_bp.route('/test', methods=['GET'])
 def test():
     return("hello world!")
-
 
 
 @work_data_bp.route('/dimensions/publications', methods=['GET'])

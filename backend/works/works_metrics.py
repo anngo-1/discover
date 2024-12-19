@@ -13,7 +13,6 @@ from bigquery.dimensions import DimensionsAnalytics
 import datetime
 import asyncio
 
-
 bq = BigQuery()
 bq.add_dataset(
     name='publications',
@@ -66,6 +65,56 @@ def get_dimensions_stats():
         print(f"Error in get_dimensions_stats: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
     
+
+    
+@work_data_bp.route('/dimensions/topics', methods=['GET'])
+def get_dimensions_topics():
+    try:
+        filter = json.loads(request.args.get('filter', '{}'))
+        result = analytics.topic_analytics.analyze('publications', filter)
+        stats_dict = {}
+
+        for _, row in result.iterrows():
+            year = int(row['year']) if pd.notna(row['year']) else None
+            if year is None:
+                continue
+
+            if year not in stats_dict:
+                stats_dict[year] = []
+
+            row_data = {
+                col: row[col].tolist() if isinstance(row[col], np.ndarray)
+                else int(row[col]) if isinstance(row[col], np.integer)
+                else float(row[col]) if isinstance(row[col], np.floating)
+                else None if pd.isna(row[col])
+                else row[col]
+                for col in result.columns if col != 'year'
+            }
+            stats_dict[year].append(row_data)
+
+        if not stats_dict:
+            return jsonify({
+                'status': 'success',
+                'data': {},
+                'summary': {'total_years': 0, 'year_range': {'earliest': None, 'latest': None}},
+                'metadata': {'filters_applied': filter}
+            })
+
+        return jsonify({
+            'status': 'success',
+            'data': stats_dict,
+            'summary': {
+                'total_years': len(stats_dict),
+                'year_range': {'earliest': min(stats_dict.keys()), 'latest': max(stats_dict.keys())}
+            },
+            'metadata': {'filters_applied': filter}
+        })
+
+    except Exception as e:
+        print(f"Error in get_dimensions_stats: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 
     
 @work_data_bp.route('/group_metrics', methods=['GET'])
